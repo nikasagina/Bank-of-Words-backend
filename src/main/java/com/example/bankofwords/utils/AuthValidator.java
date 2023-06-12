@@ -2,10 +2,10 @@ package com.example.bankofwords.utils;
 
 import com.example.bankofwords.dao.UserDAO;
 
-public class UserValidator {
+public class AuthValidator {
     private final UserDAO dao;
 
-    public UserValidator(UserDAO dao) {
+    public AuthValidator(UserDAO dao) {
         this.dao = dao;
     }
 

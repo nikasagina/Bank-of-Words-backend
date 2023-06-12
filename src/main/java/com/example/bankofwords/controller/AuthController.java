@@ -2,7 +2,7 @@ package com.example.bankofwords.controller;
 
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.utils.SecurityUtils;
-import com.example.bankofwords.utils.UserValidator;
+import com.example.bankofwords.utils.AuthValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,14 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @org.springframework.stereotype.Controller
-public class Controller {
+public class AuthController {
     private final UserDAO userDAO;
-    private final UserValidator userValidator;
+    private final AuthValidator authValidator;
 
     @Autowired
-    public Controller(UserDAO userDAO) {
+    public AuthController(UserDAO userDAO) {
         this.userDAO = userDAO;
-        this.userValidator = new UserValidator(userDAO);
+        this.authValidator = new AuthValidator(userDAO);
     }
 
     @RequestMapping("/")
@@ -48,17 +48,17 @@ public class Controller {
         List<String> errors = new ArrayList<>();
 
         // Check if the username is available
-        if (!userValidator.isUsernameAvailable(username)) {
+        if (!authValidator.isUsernameAvailable(username)) {
             errors.add("Username is not available");
         }
 
         // Check if the password is strong
-        if (!userValidator.isPasswordStrong(password)) {
+        if (!authValidator.isPasswordStrong(password)) {
             errors.add("Password is not strong");
         }
 
         // Check if the email exists
-        if (!userValidator.isEmailAvailable(email)) {
+        if (!authValidator.isEmailAvailable(email)) {
             errors.add("Already registered with this Email");
         }
 
@@ -86,6 +86,4 @@ public class Controller {
         // Return the name of the confirmation page
         return "register-confirm";
     }
-
-
 }
