@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class AuthValidator {
+    private static final String USERNAME_ERROR_MESSAGE = "Username is not available";
+    private static final String PASSWORD_ERROR_MESSAGE = "Password is not strong";
+    private static final String EMAIL_ERROR_MESSAGE = "Already registered with this Email";
+
     private final UserDAO dao;
 
     public AuthValidator(UserDAO dao) {
@@ -37,17 +41,29 @@ public class AuthValidator {
         List<String> errors = new ArrayList<>();
 
         if (!isUsernameAvailable(username)) {
-            errors.add("Username is not available");
+            errors.add(USERNAME_ERROR_MESSAGE);
         }
 
         if (!isPasswordStrong(password)) {
-            errors.add("Password is not strong");
+            errors.add(PASSWORD_ERROR_MESSAGE);
         }
 
         if (!isEmailAvailable(email)) {
-            errors.add("Already registered with this Email");
+            errors.add(EMAIL_ERROR_MESSAGE);
         }
 
         return errors;
+    }
+
+    public String getRegisterErrorClass(String fieldName, List<String> errors) {
+        if (Objects.equals(fieldName, "username")) {
+            return errors.contains(USERNAME_ERROR_MESSAGE) ? USERNAME_ERROR_MESSAGE : null;
+        } else if (Objects.equals(fieldName, "password")) {
+            return errors.contains(PASSWORD_ERROR_MESSAGE)? PASSWORD_ERROR_MESSAGE : null;
+        } else if (Objects.equals(fieldName, "email")) {
+            return errors.contains(EMAIL_ERROR_MESSAGE)? EMAIL_ERROR_MESSAGE : null;
+        }
+
+        return "";
     }
 }

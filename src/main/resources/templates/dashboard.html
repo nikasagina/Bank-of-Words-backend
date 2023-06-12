@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Welcome to the Bank of Words</title>
-
+    <title>Home</title>
 </head>
 <body>
+<div th:include="header"></div>
+
 <h1>Welcome, <span th:text="${username}"></span>!</h1>
 <p>This is the home page for a logged-in user.</p>
 <p>Content specific to logged-in users can go here.</p>
+
+
+<div th:include="footer"></div>
 </body>
 </html>

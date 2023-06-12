@@ -1,24 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Welcome to the Bank of Words</title>
-
+    <title>Login</title>
 </head>
 <body>
-<h1>Welcome to the Bank of Words</h1>
-<p>Please log in or register to access the bank of words.</p>
+<div th:include="header"></div>
 
-<div th:if="${errors}">
-    <p style="color: red;">Username or Password is not Valid</p>
+<div class="container">
+    <div class="login-box">
+        <h1>Welcome to the Bank of Words</h1>
+        <p>Please log in or register to access the bank of words.</p>
+
+        <div th:if="${errors}">
+            <p class="error-msg">Username or Password is not Valid</p>
+        </div>
+
+        <form action="/login" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br>
+            <div id="auth-buttons">
+                <button class="login-button" type="submit">Log In</button>
+                <a class="register-button" href="/register">Register</a>
+            </div>
+        </form>
+    </div>
 </div>
 
-<form action="/login" method="post">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required><br>
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required><br>
-    <button type="submit">Log In</button>
-</form>
-<p>If you don't have an account, you can <a href="/register">register here</a>.</p>
+<div th:include="footer"></div>
 </body>
 </html>

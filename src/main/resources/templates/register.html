@@ -1,28 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
     <title>Registration</title>
 </head>
 <body>
-<h1>Registration</h1>
+<div th:include="header"></div>
 
-<!-- Display the error messages if they exist -->
-<div th:if="${errors}">
-    <p style="color: red;" th:each="error : ${errors}" th:text="${error}"></p>
+<div class="container">
+    <div class="login-box">
+        <h1>Registration</h1>
+
+        <form method="post" action="/register">
+            <div class="form-group">
+                <div class="error-with-labels">
+                    <label for="username">Username:</label>
+                    <div th:if="${usernameErrorClass}" class="error-msg" th:text="${usernameErrorClass}"></div>
+                </div>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <div class="error-with-labels">
+                    <label for="password">Password:</label>
+                    <div th:if="${passwordErrorClass}" class="error-msg" th:text="${passwordErrorClass}"></div>
+                </div>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <div class="error-with-labels">
+                    <label for="email">Email:</label>
+                    <div th:if="${emailErrorClass}" class="error-msg" th:text="${emailErrorClass}"></div>
+                </div>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <input id="register-button" type="submit" value="Register">
+        </form>
+    </div>
 </div>
 
-<form method="post" action="/register">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required><br><br>
-
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required><br><br>
-
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required><br><br>
-
-    <input type="submit" value="Register">
-</form>
+<div th:include="footer"></div>
 </body>
 </html>

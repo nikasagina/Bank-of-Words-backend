@@ -62,8 +62,11 @@ public class AuthController {
                                Model model) {
         List<String> errors = authValidator.checkRegisterErrors(username, password, email);
 
+        System.out.println(authValidator.getRegisterErrorClass("username", errors));
         if (!errors.isEmpty()) {
-            model.addAttribute("errors", errors);
+            model.addAttribute("usernameErrorClass", authValidator.getRegisterErrorClass("username", errors));
+            model.addAttribute("passwordErrorClass", authValidator.getRegisterErrorClass("password", errors));
+            model.addAttribute("emailErrorClass", authValidator.getRegisterErrorClass("email", errors));
             return "register";
         }
 
