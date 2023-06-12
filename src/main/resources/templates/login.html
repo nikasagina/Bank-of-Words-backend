@@ -7,6 +7,11 @@
 <body>
 <h1>Welcome to the Bank of Words</h1>
 <p>Please log in or register to access the bank of words.</p>
+
+<div th:if="${errors}">
+    <p style="color: red;">Username or Password is not Valid</p>
+</div>
+
 <form action="/login" method="post">
     <label for="username">Username:</label>
     <input type="text" id="username" name="username" required><br>

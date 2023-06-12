@@ -7,12 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 
 @org.springframework.stereotype.Controller
@@ -26,13 +23,29 @@ public class AuthController {
         this.authValidator = new AuthValidator(userDAO);
     }
 
-    @RequestMapping("/")
-    public String home(Principal principal) {
-        if (principal != null){
-            return "index";
-        } else {
+    @GetMapping("/")
+    public String home() {
+        return "login";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestParam("username") String username,
+                        @RequestParam("password") String password,
+                        Model model) {
+
+        if(!authValidator.validLogin(username, password)) {
+            model.addAttribute("errors", true);
             return "login";
         }
+
+        model.addAttribute("username", username);
+
+        return "index";
     }
 
     @GetMapping("/register")
@@ -45,35 +58,17 @@ public class AuthController {
                                @RequestParam("password") String password,
                                @RequestParam("email") String email,
                                Model model) {
-        List<String> errors = new ArrayList<>();
+        List<String> errors = authValidator.checkRegisterErrors(username, password, email);
 
-        // Check if the username is available
-        if (!authValidator.isUsernameAvailable(username)) {
-            errors.add("Username is not available");
-        }
-
-        // Check if the password is strong
-        if (!authValidator.isPasswordStrong(password)) {
-            errors.add("Password is not strong");
-        }
-
-        // Check if the email exists
-        if (!authValidator.isEmailAvailable(email)) {
-            errors.add("Already registered with this Email");
-        }
-
-        // If there are errors, display them on the registration page
         if (!errors.isEmpty()) {
             model.addAttribute("errors", errors);
             return "register";
         }
 
-        // All validations passed, process the form data (e.g., save it to a database)
         String hash = SecurityUtils.hashPassword(password);
 
         boolean success = userDAO.addUser(username, hash, email);
 
-        // Check if the user addition was successful
         if (!success) {
             model.addAttribute("error", "Failed to register user");
             return "register";
@@ -83,7 +78,6 @@ public class AuthController {
         model.addAttribute("username", username);
         model.addAttribute("email", email);
 
-        // Return the name of the confirmation page
         return "register-confirm";
     }
 }
