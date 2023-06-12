@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.view.RedirectView;
 
 
 import java.util.List;
@@ -34,18 +35,19 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam("username") String username,
-                        @RequestParam("password") String password,
-                        Model model) {
+    public RedirectView login(@RequestParam("username") String username,
+                              @RequestParam("password") String password,
+                              Model model) {
 
         if(!authValidator.validLogin(username, password)) {
             model.addAttribute("errors", true);
-            return "login";
+            return new RedirectView("/login");
         }
+
 
         model.addAttribute("username", username);
 
-        return "index";
+        return new RedirectView("/dashboard");  // Redirect to the dashboard page
     }
 
     @GetMapping("/register")
