@@ -1,7 +1,7 @@
 package com.example.bankofwords.controller;
 
 import com.example.bankofwords.dao.UserDAO;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +17,8 @@ public class DashboardController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(HttpServletRequest request, Model model) {
-        String username = (String) request.getSession().getAttribute("username");
+    public String dashboard(HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
 
         if (username == null)
             return "redirect:/login";

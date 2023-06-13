@@ -3,7 +3,7 @@ package com.example.bankofwords.controller;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.utils.SecurityUtils;
 import com.example.bankofwords.utils.AuthValidator;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,16 +26,16 @@ public class AuthController {
     }
 
     @GetMapping("/")
-    public String home(HttpServletRequest request) {
-        if (request.getSession().getAttribute("username") != null){
+    public String home(HttpSession session) {
+        if (session.getAttribute("username") != null){
             return "redirect:/dashboard";
         }
         return "index";
     }
 
     @GetMapping("/login")
-    public String login(HttpServletRequest request) {
-        if (request.getSession().getAttribute("username") != null){
+    public String login(HttpSession session) {
+        if (session.getAttribute("username") != null){
             return "redirect:/dashboard";
         }
         return "login";
@@ -44,21 +44,21 @@ public class AuthController {
     @PostMapping("/login")
     public RedirectView login(@RequestParam("username") String username,
                               @RequestParam("password") String password,
-                              HttpServletRequest request,
+                              HttpSession session,
                               Model model) {
         if(!authValidator.validLogin(username, password)) {
             model.addAttribute("errors", true);
             return new RedirectView("/login");
         }
 
-        request.getSession().setAttribute("username", username);
+        session.setAttribute("username", username);
 
         return new RedirectView("/dashboard");  // Redirect to the dashboard page
     }
 
     @GetMapping("/register")
-    public String register(HttpServletRequest request) {
-        if (request.getSession().getAttribute("username") != null){
+    public String register(HttpSession session) {
+        if (session.getAttribute("username") != null){
             return "redirect:/dashboard";
         }
         return "register";
@@ -96,9 +96,9 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
-    public String logout(HttpServletRequest request) {
-        if (request.getSession().getAttribute("username") != null){
-            request.getSession().removeAttribute("username");
+    public String logout(HttpSession session) {
+        if (session.getAttribute("username") != null){
+            session.removeAttribute("username");
         }
 
         return "redirect:/";
