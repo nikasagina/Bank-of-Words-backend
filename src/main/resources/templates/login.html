@@ -1,15 +1,8 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Login</title>
-</head>
-<body>
 <div th:include="header"></div>
 
 <div class="container">
     <div class="login-box">
-        <h1>Welcome to the Bank of Words</h1>
-        <p>Please log in or register to access the bank of words.</p>
+        <h1>Log in</h1>
 
         <div th:if="${errors}">
             <p class="error-msg">Username or Password is not Valid</p>
@@ -20,14 +13,10 @@
             <input type="text" id="username" name="username" required><br>
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required><br>
-            <div id="auth-buttons">
-                <button class="login-button" type="submit">Log In</button>
-                <a class="register-button" href="/register">Register</a>
-            </div>
+            <button class="login-button" type="submit">Log In</button>
+
         </form>
     </div>
 </div>
 
 <div th:include="footer"></div>
-</body>
-</html>
