@@ -57,7 +57,10 @@ public class AuthController {
     }
 
     @GetMapping("/register")
-    public String register() {
+    public String register(HttpServletRequest request) {
+        if (request.getSession().getAttribute("username") != null){
+            return "redirect:/dashboard";
+        }
         return "register";
     }
 
@@ -90,5 +93,14 @@ public class AuthController {
         model.addAttribute("email", email);
 
         return "register-confirm";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        if (request.getSession().getAttribute("username") != null){
+            request.getSession().removeAttribute("username");
+        }
+
+        return "redirect:/";
     }
 }

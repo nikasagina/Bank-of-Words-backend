@@ -12,8 +12,10 @@
     <a href="/" class="logo">Bank of Words</a>
 
     <div>
-      <a th:href="@{/login}">Login</a>
-      <a th:href="@{/register}">Register</a>
+      <a th:unless="${username}" th:href="@{/login}">Login</a>
+      <a th:unless="${username}" th:href="@{/register}">Register</a>
+      <a th:if="${username}" th:href="@{/logout}">Log out</a>
+
     </div>
   </nav>
 </header>
