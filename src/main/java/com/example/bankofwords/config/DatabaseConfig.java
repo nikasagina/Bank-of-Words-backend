@@ -1,6 +1,7 @@
 package com.example.bankofwords.config;
 
 import com.example.bankofwords.dao.UserDAO;
+import com.example.bankofwords.dao.WordDAO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,11 @@ public class DatabaseConfig {
     @Bean
     public UserDAO userDAO(DataSource dataSource) {
         return new UserDAO(dataSource);
+    }
+
+    @Bean
+    public WordDAO wordDAO(DataSource dataSource) {
+        return new WordDAO(dataSource);
     }
 
 }
