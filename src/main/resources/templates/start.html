@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Start</title>
     <link rel="stylesheet" href="/css/styles.css">
-    <script src="../static/js/utils.js"></script>
+    <script src="js/utils.js"></script>
+
 </head>
 <body>
 <header>
@@ -21,18 +22,17 @@
 
             <h3>Possible Choices:</h3>
             <div id="choices">
-                <ul>
+                <ul id="c-list">
                     <li th:each="choice : ${choices}">
-                        <a href="#" onclick="checkAnswer(this.innerText);"><span th:text="${choice.word}"></span></a>
+                        <a onclick="checkAnswer(this.innerText);"><span th:text="${choice.word}"></span></a>
                     </li>
                 </ul>
             </div>
 
+            <button type="button" id="nextQuestion" onclick="skipQuestion()">Skip</button>
+
             <div id="result" style="display: none;"></div>
             <div id="correctWord" th:text="${correct.word}" style="display: none;"></div>
-
-            <a href="/start" id="nextQuestion">Skip</a>
-
 
 
         </div>
