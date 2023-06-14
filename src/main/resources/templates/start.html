@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Start</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="../static/js/utils.js"></script>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="/" class="logo">Bank of Words</a>
+    </nav>
+</header>
+<main>
+    <div class="container">
+        <div class="content">
+            <h2>Guess the Correct Word:</h2>
+            <p th:text="${correct.definition}"></p>
+
+
+            <h3>Possible Choices:</h3>
+            <div id="choices">
+                <ul>
+                    <li th:each="choice : ${choices}">
+                        <a href="#" onclick="checkAnswer(this.innerText);"><span th:text="${choice.word}"></span></a>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="result" style="display: none;"></div>
+            <div id="correctWord" th:text="${correct.word}" style="display: none;"></div>
+
+            <a href="/start" id="nextQuestion">Skip</a>
+
+
+
+        </div>
+    </div>
+</main>
+<footer>
+    <p>&copy; Bank of Words 2023</p>
+</footer>
+</body>
+</html>

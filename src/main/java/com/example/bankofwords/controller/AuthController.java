@@ -5,6 +5,7 @@ import com.example.bankofwords.utils.SecurityUtils;
 import com.example.bankofwords.utils.AuthValidator;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.Banner;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,26 +35,28 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String login(HttpSession session) {
+    public String login(HttpSession session, Model model) {
         if (session.getAttribute("username") != null){
             return "redirect:/dashboard";
         }
+
         return "login";
     }
 
     @PostMapping("/login")
-    public RedirectView login(@RequestParam("username") String username,
+    public String login(@RequestParam("username") String username,
                               @RequestParam("password") String password,
                               HttpSession session,
                               Model model) {
         if(!authValidator.validLogin(username, password)) {
             model.addAttribute("errors", true);
-            return new RedirectView("/login");
+
+            return "login";
         }
 
         session.setAttribute("username", username);
 
-        return new RedirectView("/dashboard");  // Redirect to the dashboard page
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/register")
@@ -71,7 +74,6 @@ public class AuthController {
                                Model model) {
         List<String> errors = authValidator.checkRegisterErrors(username, password, email);
 
-        System.out.println(authValidator.getRegisterErrorClass("username", errors));
         if (!errors.isEmpty()) {
             model.addAttribute("usernameErrorClass", authValidator.getRegisterErrorClass("username", errors));
             model.addAttribute("passwordErrorClass", authValidator.getRegisterErrorClass("password", errors));
