@@ -1,5 +1,6 @@
 package com.example.bankofwords.config;
 
+import com.example.bankofwords.dao.StatisticsDAO;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,4 +45,8 @@ public class DatabaseConfig {
         return new WordDAO(dataSource);
     }
 
+    @Bean
+    public StatisticsDAO statisticsDAO(DataSource dataSource) {
+        return new StatisticsDAO(dataSource);
+    }
 }

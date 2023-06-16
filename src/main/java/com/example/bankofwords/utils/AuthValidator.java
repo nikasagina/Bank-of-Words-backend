@@ -1,11 +1,13 @@
 package com.example.bankofwords.utils;
 
 import com.example.bankofwords.dao.UserDAO;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Service
 public class AuthValidator {
     private static final String USERNAME_ERROR_MESSAGE = "Username is not available";
     private static final String PASSWORD_ERROR_MESSAGE = "Password is not strong";
