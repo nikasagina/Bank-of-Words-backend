@@ -1,106 +1,71 @@
 package com.example.bankofwords.controller;
 
 import com.example.bankofwords.dao.UserDAO;
+import com.example.bankofwords.utils.JwtUtil;
 import com.example.bankofwords.utils.SecurityUtils;
 import com.example.bankofwords.utils.AuthValidator;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@org.springframework.stereotype.Controller
+@RestController
+@RequestMapping("api")
 public class AuthController {
     private final UserDAO userDAO;
     private final AuthValidator authValidator;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public AuthController(UserDAO userDAO) {
+    public AuthController(UserDAO userDAO, AuthValidator authValidator, JwtUtil jwtUtil) {
         this.userDAO = userDAO;
-        this.authValidator = new AuthValidator(userDAO);
-    }
-
-    @GetMapping("/")
-    public String home(HttpSession session) {
-        if (session.getAttribute("username") != null){
-            return "redirect:/dashboard";
-        }
-        return "index";
-    }
-
-    @GetMapping("/login")
-    public String login(HttpSession session) {
-        if (session.getAttribute("username") != null){
-            return "redirect:/dashboard";
-        }
-
-        return "login";
-    }
-
-    @PostMapping("/login")
-    public String login(@RequestParam("username") String username,
-                              @RequestParam("password") String password,
-                              HttpSession session,
-                              Model model) {
-        if(!authValidator.validLogin(username, password)) {
-            model.addAttribute("errors", true);
-
-            return "login";
-        }
-
-        session.setAttribute("username", username);
-
-        return "redirect:/dashboard";
-    }
-
-    @GetMapping("/register")
-    public String register(HttpSession session) {
-        if (session.getAttribute("username") != null){
-            return "redirect:/dashboard";
-        }
-        return "register";
+        this.authValidator = authValidator;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestParam("username") String username,
-                               @RequestParam("password") String password,
-                               @RequestParam("email") String email,
-                               Model model) {
+    public ResponseEntity<?> registerUser(@RequestParam("username") String username,
+                                          @RequestParam("password") String password,
+                                          @RequestParam("email") String email) {
+        Map<String, Object> response = new HashMap<>();
         List<String> errors = authValidator.checkRegisterErrors(username, password, email);
 
         if (!errors.isEmpty()) {
-            model.addAttribute("usernameErrorClass", authValidator.getRegisterErrorClass("username", errors));
-            model.addAttribute("passwordErrorClass", authValidator.getRegisterErrorClass("password", errors));
-            model.addAttribute("emailErrorClass", authValidator.getRegisterErrorClass("email", errors));
-            return "register";
+            response.put("successful", false);
+            response.put("usernameErrorClass", authValidator.getRegisterErrorClass("username", errors));
+            response.put("passwordErrorClass", authValidator.getRegisterErrorClass("password", errors));
+            response.put("emailErrorClass", authValidator.getRegisterErrorClass("email", errors));
+            return ResponseEntity.badRequest().body(response);
         }
 
         String hash = SecurityUtils.hashPassword(password);
-
         boolean success = userDAO.addUser(username, hash, email);
+        response.put("successful", success);
 
         if (!success) {
-            model.addAttribute("error", "Failed to register user");
-            return "register";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
 
-        // Add the form data to the model for display on a confirmation page
-        model.addAttribute("username", username);
-        model.addAttribute("email", email);
-
-        return "register-confirm";
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        if (session.getAttribute("username") != null){
-            session.removeAttribute("username");
-        }
+    @PostMapping("/authenticate")
+    public ResponseEntity<?> authenticate(@RequestBody Map<String, String> credentials) {
+        String username = credentials.get("username");
+        String password = credentials.get("password");
 
-        return "redirect:/";
+        if (authValidator.validLogin(username, password)) {
+            String jwt = jwtUtil.generateToken(username);
+            Map<String, String> response = new HashMap<>();
+            response.put("token", jwt);
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }
