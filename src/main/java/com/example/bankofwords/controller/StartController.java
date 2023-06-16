@@ -101,7 +101,7 @@ public class StartController {
             }
 
             if (statisticsDAO.getTotalCount(userId, wordId) > StatisticsConstants.MINIMUM_TRIES_TO_LEARN &&
-                    statisticsDAO.getSuccessRate(userId, wordId) > StatisticsConstants.MINIMUM_LEARN_RATE) {
+                    statisticsDAO.getUserSuccessRateForWord(userId, wordId) > StatisticsConstants.MINIMUM_LEARN_RATE) {
                 wordDAO.learnWord(userId, wordId);
             }
 

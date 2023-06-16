@@ -1,5 +1,6 @@
 package com.example.bankofwords.dao;
 
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,8 +56,8 @@ public class UserDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, username);
             try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-                return resultSet.getString(1);
+                if(resultSet.next())
+                    return resultSet.getString(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -71,13 +72,30 @@ public class UserDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, username);
             try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-                return resultSet.getLong(1);
+                if(resultSet.next())
+                    return resultSet.getLong(1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return -1;
+        return 0;
+    }
+
+
+    public String getUsername(long userId) {
+        String sql = "SELECT username FROM users WHERE user_id = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if(resultSet.next())
+                    return resultSet.getString(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }
