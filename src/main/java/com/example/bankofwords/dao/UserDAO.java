@@ -27,9 +27,9 @@ public class UserDAO {
                 }
             }
         } catch (SQLException e) {
-            // Handle any exceptions
             e.printStackTrace();
         }
+
         return false;
     }
 
@@ -43,9 +43,9 @@ public class UserDAO {
             int rowsAffected = statement.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
-            // Handle any exceptions
             e.printStackTrace();
         }
+
         return false;
     }
 
@@ -59,24 +59,22 @@ public class UserDAO {
                 return resultSet.getString(1);
             }
         } catch (SQLException e) {
-            // Handle any exceptions
             e.printStackTrace();
         }
 
         return null;
     }
 
-    public int getUserID(String username) {
-        String sql = "SELECT id FROM users WHERE username = ?";
+    public long getUserID(String username) {
+        String sql = "SELECT user_id FROM users WHERE username = ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, username);
             try (ResultSet resultSet = statement.executeQuery()) {
                 resultSet.next();
-                return resultSet.getInt(1);
+                return resultSet.getLong(1);
             }
         } catch (SQLException e) {
-            // Handle any exceptions
             e.printStackTrace();
         }
 

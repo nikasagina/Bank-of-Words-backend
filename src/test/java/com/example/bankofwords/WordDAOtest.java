@@ -5,6 +5,8 @@ import com.example.bankofwords.objects.Word;
 import junit.framework.TestCase;
 import org.apache.commons.dbcp2.BasicDataSource;
 
+import java.util.Optional;
+
 public class WordDAOtest extends TestCase {
 
     private WordDAO dao;
@@ -33,6 +35,18 @@ public class WordDAOtest extends TestCase {
         System.out.println(randomWord.toString());
         System.out.println("Incorrect:");
         System.out.println(dao.getIncorrectWords(randomWord, 1).toString());
+
+    }
+
+    public void testGetWordId() {
+        assertEquals(1L, (long) dao.getWordId(dao.getWordWithId(1).getWord(), 0));
+        assertEquals(2L, (long) dao.getWordId(dao.getWordWithId(2).getWord(), 0));
+        assertEquals(5L, (long) dao.getWordId(dao.getWordWithId(5).getWord(), 0));
+
+    }
+
+    public void alreadyKnows() {
+
 
     }
 }
