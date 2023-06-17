@@ -130,7 +130,7 @@ public class StatisticsDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user_id);
 
-            try (ResultSet resultSet = statement.executeQuery(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
 
                 if (resultSet.next())
                     return resultSet.getLong(1);
@@ -178,7 +178,8 @@ public class StatisticsDAO {
 
     public List<Long> getTopUserIdsWithBestSuccessRate(int num) {
         List<Long> result = new ArrayList<>();
-        String sql = "SELECT user_id FROM word_statistics ORDER BY correct_count / total_count DESC LIMIT ?;";
+        String sql = "SELECT user_id, SUM(correct_count) / SUM(total_count) AS max FROM word_statistics" +
+                    " GROUP BY user_id ORDER BY max DESC LIMIT ?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, num);
