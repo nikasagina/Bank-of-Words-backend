@@ -95,11 +95,52 @@ Marks a word as learned by the user.
 
 ## StatisticsController
 
-### Get User Success Rate for a Word
+### Get User Statistics
 
-Retrieves the success rate of a user for a specific word.
+Retrieves various statistics for a user.
 
-**Endpoint**: `GET /api/stats/user/word-rate`
+**Endpoint**: `GET /api/stats/user`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Response
+
+- Success: Returns a JSON object with the following statistics:
+    - `total_guesses_count` (long) - The total number of guesses made by the user.
+    - `success_guesses_count` (long) - The total number of successful guesses made by the user.
+    - `success_rate` (double) - The overall success rate of the user.
+    - `most_guessed_word` (string) - The word that has been most guessed by the user.
+    - `least_guessed_word` (string) - The word that has been least guessed by the user.
+- Error: Returns an unauthorized status if authentication fails.
+
+### Get Global Statistics
+
+Retrieves various global statistics.
+
+**Endpoint**: `GET /api/stats/global`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Response
+
+- Success: Returns a JSON object with the following statistics:
+    - `most_guessed_word` (string) - The word that has been most guessed overall by all users.
+    - `least_guessed_word` (string) - The word that has been least guessed overall by all users.
+    - `top_user` (string) - The username of the user with the best success rate.
+    - `top_5` (array of strings) - An array of the top 5 usernames with the best success rates.
+- Error: Returns an unauthorized status if authentication fails.
+
+## UploadController
+
+### Upload Word
+
+Uploads a new word with its definition for a user.
+
+**Endpoint**: `POST /api/upload/word`
 
 #### Request Headers
 
@@ -107,144 +148,11 @@ Retrieves the success rate of a user for a specific word.
 
 #### Request Parameters
 
-- `word` (string, required) - The word to retrieve the success rate for.
+- `word` (string, required) - The word to be uploaded.
+- `definition` (string, required) - The definition of the word.
 
 #### Response
 
-- Success: Returns a JSON object with the success rate for the word.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get User Total Guesses Count
-
-Retrieves the total number of guesses made by a user.
-
-**Endpoint**: `GET /api/stats/user/count/total-guesses`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with the total number of guesses made by the user.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get User Successful Guesses Count
-
-Retrieves the total number of successful guesses made by a user.
-
-**Endpoint**: `GET /api/stats/user/count/success-guesses`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with the total number of successful guesses made by the user.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get User Success Rate
-
-Retrieves the overall success rate of a user.
-
-**Endpoint**: `GET /api/stats/user/success-rate`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with the overall success rate of the user.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get Word Most Guessed by User
-
-Retrieves the word that has been most guessed by a user.
-
-**Endpoint**: `GET /api/stats/user/word/most-guessed`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with the most guessed word by the user.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get Word Least Guessed by User
-
-Retrieves the word that has been least guessed by a user.
-
-**Endpoint**: `GET /api/stats/user/word/least-guessed`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with the least guessed word by the user.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get Most Guessed Word Overall
-
-Retrieves the word that has been most guessed overall by all users.
-
-**Endpoint**: `GET /api/stats/most-guessed`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with the most guessed word overall.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get Least Guessed Word Overall
-
-Retrieves the word that has been least guessed overall by all users.
-
-**Endpoint**: `GET /api/stats/least-guessed`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with the least guessed word overall.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get Top User
-
-Retrieves the user with the best success rate.
-
-**Endpoint**: `GET /api/stats/top-user`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with the username of the top user.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Get Top 5 Users
-
-Retrieves the top 5 users with the best success rates.
-
-**Endpoint**: `GET /api/stats/top-5`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Response
-
-- Success: Returns a JSON object with an array of the top 5 usernames.
+- Success: Returns a JSON object with the following:
+  - `successful` (boolean) - Indicates whether the word was successfully uploaded.
 - Error: Returns an unauthorized status if authentication fails.
