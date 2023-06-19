@@ -1,6 +1,5 @@
 package com.example.bankofwords.controller;
 
-
 import com.example.bankofwords.dao.StatisticsDAO;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
@@ -9,12 +8,16 @@ import com.example.bankofwords.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @RequestMapping("api/stats")
@@ -32,177 +35,97 @@ public class StatisticsController {
         this.statisticsDAO = statisticsDAO;
     }
 
-    @GetMapping("/user/word-rate")
-    public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader, @RequestParam("word") String word) {
+    @GetMapping("/user")
+    public ResponseEntity<?> getUserStatistics(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
             long userId = userDAO.getUserID(username);
-            long wordId = wordDAO.getWordId(word, userId);
+            Map<String, Object> response = new HashMap<>();
 
-            response.put("rate", statisticsDAO.getUserSuccessRateForWord(userId, wordId));
+            Long totalGuessesCount = (long) statisticsDAO.getUserTotalGuessesCount(userId);
+            response.put("total_guesses_count", totalGuessesCount);
+
+            Long successGuessesCount = (long) statisticsDAO.getUserSuccessfulGuessesCount(userId);
+            response.put("success_guesses_count", successGuessesCount);
+
+            Double successRate = statisticsDAO.getUserSuccessRateTotal(userId);
+            if (!Double.isNaN(successRate)) {
+                response.put("success_rate", successRate);
+            } else {
+                response.put("success_rate", null);
+            }
+
+            long mostGuessedWordId = statisticsDAO.getMostGuessedWordByUser(userId);
+            Word mostGuessedWord = wordDAO.getWordWithId(mostGuessedWordId);
+            if (mostGuessedWord != null) {
+                response.put("most_guessed_word", mostGuessedWord.getWord());
+            } else {
+                response.put("most_guessed_word", null);
+            }
+
+            long leastGuessedWordId = statisticsDAO.getLeastGuessedWordByUser(userId);
+            Word leastGuessedWord = wordDAO.getWordWithId(leastGuessedWordId);
+            if (leastGuessedWord != null) {
+                response.put("least_guessed_word", leastGuessedWord.getWord());
+            } else {
+                response.put("least_guessed_word", null);
+            }
+
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
-    @GetMapping("/user/count/total-guesses")
-    public ResponseEntity<?> userTotalGuessesCount(@RequestHeader("Authorization") String authHeader) {
+    @GetMapping("/global")
+    public ResponseEntity<?> getGlobalStatistics(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
 
-            long userId = userDAO.getUserID(username);
+            long mostGuessedWordId = statisticsDAO.getMostGuessedWordOverall();
+            Word mostGuessedWord = wordDAO.getWordWithId(mostGuessedWordId);
+            if (mostGuessedWord != null) {
+                response.put("most_guessed_word", mostGuessedWord.getWord());
+            } else {
+                response.put("most_guessed_word", null);
+            }
 
-            response.put("count", statisticsDAO.getUserTotalGuessesCount(userId));
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
+            long leastGuessedWordId = statisticsDAO.getLeastGuessedWordOverall();
+            Word leastGuessedWord = wordDAO.getWordWithId(leastGuessedWordId);
+            if (leastGuessedWord != null) {
+                response.put("least_guessed_word", leastGuessedWord.getWord());
+            } else {
+                response.put("least_guessed_word", null);
+            }
 
-    @GetMapping("/user/count/success-guesses")
-    public ResponseEntity<?> userSuccessGuessesCount(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long userId = userDAO.getUserID(username);
-
-            response.put("count", statisticsDAO.getUserSuccessfulGuessesCount(userId));
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @GetMapping("/user/success-rate")
-    public ResponseEntity<?> userSuccessRate(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long userId = userDAO.getUserID(username);
-
-            response.put("rate", statisticsDAO.getUserSuccessRateTotal(userId));
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-
-    @GetMapping("/user/word/most-guessed")
-    public ResponseEntity<?> mostGuessedByUser(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long userId = userDAO.getUserID(username);
-            long wordId = statisticsDAO.getMostGuessedWordByUser(userId);
-            Word word = wordDAO.getWordWithId(wordId);
-
-            response.put("word", word.getWord());
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @GetMapping("/user/word/least-guessed")
-    public ResponseEntity<?> leastGuessedByUser(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long userId = userDAO.getUserID(username);
-            long wordId = statisticsDAO.getLeastGuessedWordByUser(userId);
-            Word word = wordDAO.getWordWithId(wordId);
-
-            response.put("word", word.getWord());
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @GetMapping("/most-guessed")
-    public ResponseEntity<?> mostGuessedOverall(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long wordId = statisticsDAO.getMostGuessedWordOverall();
-            Word word = wordDAO.getWordWithId(wordId);
-
-            response.put("word", word.getWord());
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @GetMapping("/least-guessed")
-    public ResponseEntity<?> leastGuessedOverall(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long wordId = statisticsDAO.getLeastGuessedWordOverall();
-            Word word = wordDAO.getWordWithId(wordId);
-
-            response.put("word", word.getWord());
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @GetMapping("/top-user")
-    public ResponseEntity<?> topUser(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long userId = statisticsDAO.getTopUserIdsWithBestSuccessRate(1).get(0);
-            String topUsername = userDAO.getUsername(userId);
-
-            response.put("word", topUsername);
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @GetMapping("/top-5")
-    public ResponseEntity<?> top5(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
+            List<Long> topUserIds = statisticsDAO.getTopUserIdsWithBestSuccessRate(1);
+            if (!topUserIds.isEmpty()) {
+                Long topUserId = topUserIds.get(0);
+                String topUsername = userDAO.getUsername(topUserId);
+                if (topUsername != null) {
+                    response.put("top_user", topUsername);
+                }
+            } else {
+                response.put("top_user", null);
+            }
 
             List<Long> userIds = statisticsDAO.getTopUserIdsWithBestSuccessRate(5);
             List<String> topUsernames = new ArrayList<>();
-
-            for( long userId : userIds) {
-                topUsernames.add(userDAO.getUsername(userId));
+            for (long userId : userIds) {
+                String name = userDAO.getUsername(userId);
+                if (name != null) {
+                    topUsernames.add(name);
+                }
             }
+            response.put("top_5", topUsernames);
 
-            response.put("word", topUsernames);
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+
 }

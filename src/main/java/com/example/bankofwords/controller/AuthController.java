@@ -55,10 +55,8 @@ public class AuthController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<?> authenticate(@RequestBody Map<String, String> credentials) {
-        String username = credentials.get("username");
-        String password = credentials.get("password");
-
+    public ResponseEntity<?> authenticate(@RequestParam("username") String username,
+                                          @RequestParam("password") String password) {
         if (authValidator.validLogin(username, password)) {
             String jwt = jwtUtil.generateToken(username);
             Map<String, String> response = new HashMap<>();

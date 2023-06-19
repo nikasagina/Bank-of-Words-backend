@@ -67,6 +67,7 @@ public class WordDAO {
     }
 
     public Word getWordWithId(long word_id) {
+        if (word_id == 0) return null;
         String sql = "SELECT word, definition FROM words WHERE word_id = ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
