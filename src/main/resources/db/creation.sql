@@ -1,4 +1,6 @@
+CREATE DATABASE IF NOT EXISTS bank_of_words_db;
 USE bank_of_words_db;
+
 
 DROP TABLE IF EXISTS word_statistics;
 DROP TABLE IF EXISTS known_words;

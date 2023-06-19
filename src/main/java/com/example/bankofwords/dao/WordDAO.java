@@ -133,6 +133,34 @@ public class WordDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
 
+    public Boolean userWordsContain(long user_id, String word) {
+        String sql = "SELECT word_id FROM words WHERE word = ? AND (creator_id = 0 || creator_id = ?);";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, word);
+            statement.setLong(2, user_id);
+            ResultSet resultSet = statement.executeQuery();
+            return resultSet.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public void addWord(long userId, String word, String definition) {
+        String sql = "INSERT INTO words (word, definition, creator_id) value (?, ?, ?);";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, word);
+            statement.setString(2, definition);
+            statement.setLong(3, userId);
+            statement.execute();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
