@@ -37,7 +37,7 @@ Authenticates a user and generates a JWT token.
 - Success: Returns a JSON object with the generated JWT token.
 - Error: Returns an unauthorized status if authentication fails.
 
-## StartController
+## QuestionController
 
 ### Start Learning
 
@@ -54,6 +54,21 @@ Starts a new learning session and retrieves a question for the user.
 - Success: Returns a JSON object with the question and choices for the user.
 - Error: Returns an unauthorized status if authentication fails.
 
+### Start Learning Spelling
+
+Starts a new learning session and retrieves a question about spelling for the user.
+
+**Endpoint**: `GET /api/question/spelling`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Response
+
+- Success: Returns a JSON object with the question and choices for the user.
+- Error: Returns an unauthorized status if authentication fails.
+- 
 ### Submit Answer
 
 Submits the user's answer to a question.
