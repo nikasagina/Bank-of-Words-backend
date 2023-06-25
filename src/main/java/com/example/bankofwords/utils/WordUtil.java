@@ -1,11 +1,9 @@
 package com.example.bankofwords.utils;
 
-import com.example.bankofwords.objects.Word;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
@@ -39,5 +37,17 @@ public class WordUtil {
     private boolean isNumber(String string) {
         String pattern = "^-?\\d+(\\.\\d+)?$";
         return Pattern.matches(pattern, string);
+    }
+
+    public static List<String> extractStringsInQuotes(String input) {
+        List<String> resultList = new ArrayList<>();
+        Pattern pattern = Pattern.compile("\"([^\"]*)\"");
+        Matcher matcher = pattern.matcher(input);
+
+        while (matcher.find()) {
+            resultList.add(matcher.group(1));
+        }
+
+        return resultList;
     }
 }

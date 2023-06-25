@@ -139,27 +139,4 @@ public class QuestionController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
-
-    @PostMapping("/learn")
-    public ResponseEntity<?> learn(@RequestHeader("Authorization") String authHeader, @RequestParam("word") String word) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long userId = userDAO.getUserID(username);
-            long wordId = wordDAO.getWordId(word, userId);
-
-            if (wordDAO.alreadyKnows(userId, wordId)) {
-                response.put("success", false);
-            } else {
-                wordDAO.learnWord(userId, wordId);
-                response.put("success", true);
-            }
-
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
 }

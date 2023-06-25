@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.*;
 
 @RestController
-@RequestMapping("api/")
+@RequestMapping("api/upload")
 public class UploadController {
 
     private final WordDAO wordDAO;
@@ -44,7 +44,7 @@ public class UploadController {
         this.epubParser = epubParser;
     }
 
-    @PostMapping("upload/word")
+    @PostMapping("/word")
     public ResponseEntity<?> uploadWord(@RequestHeader("Authorization") String authHeader,
                            @RequestParam("word") String word,
                            @RequestParam("definition") String definition) {
@@ -68,7 +68,7 @@ public class UploadController {
     }
 
 
-    @PostMapping("upload/book")
+    @PostMapping("/book")
     public ResponseEntity<?> uploadBook(@RequestHeader("Authorization") String authHeader,
                                         @RequestParam("file") MultipartFile file) {
         String token = authHeader.replace("Bearer ", "");
@@ -117,25 +117,5 @@ public class UploadController {
     private String getFileExtension(String fileName) {
         int lastIndex = fileName.lastIndexOf('.');
         return lastIndex == -1 ? "" : fileName.substring(lastIndex + 1).toLowerCase();
-    }
-
-
-    // Helper endpoint to upload word manually. Returns available definitions for the word
-    @GetMapping("get/definitions")
-    public ResponseEntity<?> getDefinitions(@RequestHeader("Authorization") String authHeader,
-                                        @RequestParam("word") String word) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            List<String> definitions = lexiconDAO.getDefinitions(word);
-
-            response.put("available definitions", definitions);
-
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
     }
 }
