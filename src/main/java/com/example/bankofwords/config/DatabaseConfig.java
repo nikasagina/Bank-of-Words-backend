@@ -1,5 +1,6 @@
 package com.example.bankofwords.config;
 
+import com.example.bankofwords.dao.LexiconDAO;
 import com.example.bankofwords.dao.StatisticsDAO;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
@@ -48,5 +49,10 @@ public class DatabaseConfig {
     @Bean
     public StatisticsDAO statisticsDAO(DataSource dataSource) {
         return new StatisticsDAO(dataSource);
+    }
+
+    @Bean
+    public LexiconDAO lexiconDAO(DataSource dataSource) {
+        return new LexiconDAO(dataSource);
     }
 }
