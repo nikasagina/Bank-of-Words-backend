@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 
 @Configuration
 public class DatabaseConfig {
+    private static final String LEXICON_DB_URL = "jdbc:mysql://localhost:3306/wordnet_db";
 
     @Value("${spring.datasource.url}")
     private String dbUrl;
@@ -27,7 +28,7 @@ public class DatabaseConfig {
     private String driverClassName;
 
     @Bean
-    public DataSource dataSource() {
+    public DataSource bankDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(driverClassName);
         dataSource.setUrl(dbUrl);
@@ -51,8 +52,17 @@ public class DatabaseConfig {
         return new StatisticsDAO(dataSource);
     }
 
+    public DataSource lexiconDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(driverClassName);
+        dataSource.setUrl(LEXICON_DB_URL);
+        dataSource.setUsername(dbUsername);
+        dataSource.setPassword(dbPassword);
+        return dataSource;
+    }
+
     @Bean
-    public LexiconDAO lexiconDAO(DataSource dataSource) {
-        return new LexiconDAO(dataSource);
+    public LexiconDAO lexiconDAO() {
+        return new LexiconDAO(lexiconDataSource());
     }
 }
