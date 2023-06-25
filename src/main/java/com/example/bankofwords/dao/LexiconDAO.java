@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LexiconDAO {
     private final DataSource dataSource;
@@ -50,4 +52,27 @@ public class LexiconDAO {
         }
         return false;
     }
+
+    public List<String> getDefinitions(String word) {
+        String sql = "SELECT w.word, g.gloss FROM wn_synset AS w JOIN wn_gloss AS g ON w.synset_id = g.synset_id WHERE w.word = ?;";
+        List<String> result = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, word);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while(resultSet.next()) {
+                    String definitionWithExample = resultSet.getString("gloss");
+                    int semicolonIndex = definitionWithExample.indexOf(";");
+                    if (semicolonIndex != -1)
+                        result.add(definitionWithExample.substring(0, semicolonIndex));
+                    else result.add(definitionWithExample);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
 }
