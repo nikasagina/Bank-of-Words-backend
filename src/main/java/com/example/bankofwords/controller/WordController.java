@@ -4,6 +4,7 @@ package com.example.bankofwords.controller;
 import com.example.bankofwords.dao.LexiconDAO;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -97,6 +98,42 @@ public class WordController {
             response.put("examples", lexiconDAO.getDefinitionExamples(word, definition));
             response.put("synonyms", lexiconDAO.getWordSynonyms(word));
             response.put("antonyms", lexiconDAO.getWordAntonyms(word));
+
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @GetMapping("/learning")
+    public ResponseEntity<?> getAllLearningWords(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (jwtUtil.validateToken(token, username)) {
+            Map<String, Object> response = new HashMap<>();
+
+            long userId = userDAO.getUserID(username);
+            List<Word> words = wordDAO.getAllLearningWords(userId);
+
+            response.put("learning words", words);
+
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @GetMapping("/learned")
+    public ResponseEntity<?> getAllLearnedWords(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (jwtUtil.validateToken(token, username)) {
+            Map<String, Object> response = new HashMap<>();
+
+            long userId = userDAO.getUserID(username);
+            List<Word> words = wordDAO.getAllLearnedWords(userId);
+
+            response.put("learned words", words);
 
             return ResponseEntity.ok(response);
         } else {

@@ -1,6 +1,7 @@
 package com.example.bankofwords.dao;
 
 import com.example.bankofwords.objects.Word;
+import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -162,5 +163,35 @@ public class WordDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Word> getAllLearningWords(long userId) {
+        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
+                "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0;";
+        return getWordList(userId, sql);
+    }
+
+    public List<Word> getAllLearnedWords(long userId) {
+        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
+                "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) != 0;";
+        return getWordList(userId, sql);
+    }
+
+    private List<Word> getWordList(long userId, String sql) {
+        List<Word> result = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, userId);
+            statement.setLong(2, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()){
+                    result.add(new Word(resultSet.getString(1), resultSet.getString(2)));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }
