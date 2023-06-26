@@ -68,7 +68,7 @@ Starts a new learning session and retrieves a question about spelling for the us
 
 - Success: Returns a JSON object with the question and choices for the user.
 - Error: Returns an unauthorized status if authentication fails.
-- 
+
 ### Submit Answer
 
 Submits the user's answer to a question.
@@ -87,25 +87,6 @@ Submits the user's answer to a question.
 #### Response
 
 - Success: Returns a JSON object with the correctness of the answer and the correct answer.
-- Error: Returns an unauthorized status if authentication fails.
-
-### Learn Word
-
-Marks a word as learned by the user.
-
-**Endpoint**: `POST /api/learn`
-
-#### Request Headers
-
-- `Authorization` (string, required) - The JWT token for authentication.
-
-#### Request Parameters
-
-- `word` (string, required) - The word to mark as learned.
-
-#### Response
-
-- Success: Returns a JSON object with the success status.
 - Error: Returns an unauthorized status if authentication fails.
 
 ## StatisticsController
@@ -170,4 +151,117 @@ Uploads a new word with its definition for a user.
 
 - Success: Returns a JSON object with the following:
   - `successful` (boolean) - Indicates whether the word was successfully uploaded.
+- Error: Returns an unauthorized status if authentication fails.
+
+
+### Upload Book
+
+Uploads a book file and extracts unknown words from it. The unknown words are then added to the user's word collection.
+
+**Endpoint**: `POST /api/upload/book`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Request Parameters
+
+- `file` (file, required) - The book file to be uploaded.
+
+#### Response
+
+- Success: Returns a JSON object with the following:
+  - `successful` (boolean) - Indicates whether the book was successfully processed.
+  - `message` (string) - A success message.
+  - `added words` (object) - A map of the added words and their definitions.
+
+- Error: Returns an unauthorized status if authentication fails or a bad request status if the file format is unsupported.
+
+## WordController
+
+### Learn Word
+
+Marks a word as learned by the user.
+
+**Endpoint**: `POST /api/word/learn`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Request Parameters
+
+- `word` (string, required) - The word to mark as learned.
+
+#### Response
+
+- Success: Returns a JSON object with the success status.
+- Error: Returns an unauthorized status if authentication fails.
+
+### Get Definitions
+
+Retrieves available definitions for a word.
+
+**Endpoint**: `GET /api/word/definitions`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Request Parameters
+
+- `word` (string, required) - The word to get definitions for.
+
+#### Response
+
+- Success: Returns a JSON object with the available definitions.
+- Error: Returns an unauthorized status if authentication fails.
+
+### Get Word Info
+
+Retrieves detailed information about a word.
+
+**Endpoint**: `GET /api/word/info`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Request Parameters
+
+- `word` (string, required) - The word to get information for.
+
+#### Response
+
+- Success: Returns a JSON object with detailed information about the word, including definition, other definitions, examples, synonyms, and antonyms.
+- Error: Returns an unauthorized status if authentication fails.
+
+### Get All Learning Words
+
+Retrieves all words that the user is currently learning.
+
+**Endpoint**: `GET /api/word/learning`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Response
+
+- Success: Returns a JSON object with the list of learning words.
+- Error: Returns an unauthorized status if authentication fails.
+
+### Get All Learned Words
+
+Retrieves all words that the user has learned.
+
+**Endpoint**: `GET /api/word/learned`
+
+#### Request Headers
+
+- `Authorization` (string, required) - The JWT token for authentication.
+
+#### Response
+
+- Success: Returns a JSON object with the list of learned words.
 - Error: Returns an unauthorized status if authentication fails.
