@@ -37,6 +37,21 @@ Authenticates a user and generates a JWT token.
 - Success: Returns a JSON object with the generated JWT token.
 - Error: Returns an unauthorized status if authentication fails.
 
+### Logout User
+
+Invalidates the JWT token for a logged-in user.
+
+**Endpoint**: `POST /api/logout`
+
+#### Request Headers
+
+- `Authorization` - Bearer `<token>` (required) - JWT token for the user.
+
+#### Response
+
+- Success: Returns a response with status code 200 (OK) if the token was successfully invalidated.
+- Error: Returns a response with status code 401 (Unauthorized) if the token is invalid or expired.
+
 ## QuestionController
 
 ### Start Learning

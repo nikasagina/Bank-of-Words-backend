@@ -10,9 +10,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
+import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
-public class DatabaseConfig {
+public class Config {
     private static final String LEXICON_DB_URL = "jdbc:mysql://localhost:3306/wordnet_db";
 
     @Value("${spring.datasource.url}")
@@ -64,5 +66,10 @@ public class DatabaseConfig {
     @Bean
     public LexiconDAO lexiconDAO() {
         return new LexiconDAO(lexiconDataSource());
+    }
+
+    @Bean
+    public Set<String> invalidatedTokens() {
+        return new HashSet<>();
     }
 }

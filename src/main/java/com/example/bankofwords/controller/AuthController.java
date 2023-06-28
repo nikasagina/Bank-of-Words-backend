@@ -10,9 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("api")
@@ -20,12 +18,14 @@ public class AuthController {
     private final UserDAO userDAO;
     private final AuthValidator authValidator;
     private final JwtUtil jwtUtil;
+    private final Set<String> invalidatedTokens;
 
     @Autowired
-    public AuthController(UserDAO userDAO, AuthValidator authValidator, JwtUtil jwtUtil) {
+    public AuthController(UserDAO userDAO, AuthValidator authValidator, JwtUtil jwtUtil, Set<String> invalidatedTokens) {
         this.userDAO = userDAO;
         this.authValidator = authValidator;
         this.jwtUtil = jwtUtil;
+        this.invalidatedTokens = invalidatedTokens;
     }
 
     @PostMapping("/register")
@@ -62,6 +62,20 @@ public class AuthController {
             Map<String, String> response = new HashMap<>();
             response.put("token", jwt);
             return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (jwtUtil.validateToken(token, username)) {
+
+            jwtUtil.invalidateToken(token);
+
+            return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

@@ -66,7 +66,7 @@ public class WordController {
 
             List<String> definitions = lexiconDAO.getDefinitions(word);
 
-            response.put("available definitions", definitions);
+            response.put("available_definitions", definitions);
 
             return ResponseEntity.ok(response);
         } else {
@@ -94,7 +94,7 @@ public class WordController {
 
             response.put("word", word);
             response.put("definition", definition);
-            response.put("other definitions", otherDefinitions);
+            response.put("other_definitions", otherDefinitions);
             response.put("examples", lexiconDAO.getDefinitionExamples(word, definition));
             response.put("synonyms", lexiconDAO.getWordSynonyms(word));
             response.put("antonyms", lexiconDAO.getWordAntonyms(word));
@@ -115,7 +115,7 @@ public class WordController {
             long userId = userDAO.getUserID(username);
             List<Word> words = wordDAO.getAllLearningWords(userId);
 
-            response.put("learning words", words);
+            response.put("learning_words", words);
 
             return ResponseEntity.ok(response);
         } else {
@@ -133,7 +133,7 @@ public class WordController {
             long userId = userDAO.getUserID(username);
             List<Word> words = wordDAO.getAllLearnedWords(userId);
 
-            response.put("learned words", words);
+            response.put("learned_words", words);
 
             return ResponseEntity.ok(response);
         } else {
