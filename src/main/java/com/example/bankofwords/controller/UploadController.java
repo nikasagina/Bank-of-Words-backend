@@ -4,9 +4,7 @@ package com.example.bankofwords.controller;
 import com.example.bankofwords.dao.LexiconDAO;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
-import com.example.bankofwords.parser.EpubParser;
 import com.example.bankofwords.parser.PdfParser;
-import com.example.bankofwords.parser.MobiParser;
 import com.example.bankofwords.utils.JwtUtil;
 import com.example.bankofwords.utils.WordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,20 +26,16 @@ public class UploadController {
     private final LexiconDAO lexiconDAO;
     private final WordUtil wordUtil;
     private final PdfParser pdfParser;
-    private final MobiParser mobiParser;
-    private final EpubParser epubParser;
 
     @Autowired
-    public UploadController(WordDAO wordDAO, UserDAO userDAO, JwtUtil jwtUtil, LexiconDAO lexiconDAO, WordUtil wordUtil,
-                            WordUtil wordUtil1, PdfParser pdfParser, MobiParser mobiParser, EpubParser epubParser) {
+    public UploadController(WordDAO wordDAO, UserDAO userDAO, JwtUtil jwtUtil, LexiconDAO lexiconDAO,
+                            WordUtil wordUtil, PdfParser pdfParser) {
         this.wordDAO = wordDAO;
         this.userDAO = userDAO;
         this.jwtUtil = jwtUtil;
         this.lexiconDAO = lexiconDAO;
-        this.wordUtil = wordUtil1;
+        this.wordUtil = wordUtil;
         this.pdfParser = pdfParser;
-        this.mobiParser = mobiParser;
-        this.epubParser = epubParser;
     }
 
     @PostMapping("/word")
@@ -79,14 +73,11 @@ public class UploadController {
                 List<String> unknownWords;
                 long userId = userDAO.getUserID(username);
 
-                switch (fileExtension) {
-                    case "pdf" -> unknownWords = pdfParser.parsePdf(file);
-//                    case "mobi" -> unknownWords = mobiParser.parseMobi(file);
-//                    case "epub" -> unknownWords = epubParser.parseEpub(file);
-                    default -> {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                .body("Unsupported file format.");
-                    }
+                if (fileExtension.equals("pdf")) {
+                    unknownWords = pdfParser.parsePdf(file);
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Unsupported file format.");
                 }
 
                 Map<String, String> addedWords = new HashMap<>();
