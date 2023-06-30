@@ -1,10 +1,13 @@
 package com.example.bankofwords.dao;
 
 
+import com.example.bankofwords.objects.User;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 import javax.sql.DataSource;
 
@@ -91,6 +94,26 @@ public class UserDAO {
             try (ResultSet resultSet = statement.executeQuery()) {
                 if(resultSet.next())
                     return resultSet.getString(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public User getUserByUsername(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()){
+                   String email = resultSet.getString("email");
+                   LocalDateTime joinDate = resultSet.getTimestamp("join_date").toLocalDateTime();
+
+                   return new User(username, email, joinDate);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

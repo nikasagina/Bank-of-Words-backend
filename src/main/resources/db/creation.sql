@@ -11,7 +11,8 @@ CREATE TABLE users (
                        user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        username VARCHAR(255) NOT NULL,
                        password_hash VARCHAR(255) NOT NULL,
-                       email VARCHAR(255) NOT NULL
+                       email VARCHAR(255) NOT NULL,
+                       join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE words (
