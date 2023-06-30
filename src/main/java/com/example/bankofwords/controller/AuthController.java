@@ -18,14 +18,12 @@ public class AuthController {
     private final UserDAO userDAO;
     private final AuthValidator authValidator;
     private final JwtUtil jwtUtil;
-    private final Set<String> invalidatedTokens;
 
     @Autowired
-    public AuthController(UserDAO userDAO, AuthValidator authValidator, JwtUtil jwtUtil, Set<String> invalidatedTokens) {
+    public AuthController(UserDAO userDAO, AuthValidator authValidator, JwtUtil jwtUtil) {
         this.userDAO = userDAO;
         this.authValidator = authValidator;
         this.jwtUtil = jwtUtil;
-        this.invalidatedTokens = invalidatedTokens;
     }
 
     @PostMapping("/register")
@@ -40,7 +38,7 @@ public class AuthController {
             response.put("usernameErrorClass", authValidator.getRegisterErrorClass("username", errors));
             response.put("passwordErrorClass", authValidator.getRegisterErrorClass("password", errors));
             response.put("emailErrorClass", authValidator.getRegisterErrorClass("email", errors));
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.ok(response);
         }
 
         String hash = SecurityUtils.hashPassword(password);

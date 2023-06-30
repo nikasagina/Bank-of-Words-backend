@@ -93,7 +93,7 @@ public class UploadController {
                 Map<String, Object> response = new HashMap<>();
                 response.put("successful", true);
                 response.put("message", "Words from the book have been added.");
-                response.put("added words", addedWords);
+                response.put("added_words", addedWords);
 
                 return ResponseEntity.ok(response);
             } catch (IOException e) {
