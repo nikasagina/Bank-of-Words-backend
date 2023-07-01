@@ -194,4 +194,26 @@ public class WordDAO {
 
         return result;
     }
+
+    // Random word that the user has already seen
+    public Word getRandomWordWithProgress(long user_id) {
+        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
+                "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 && " +
+                "(SELECT COUNT(*) FROM word_statistics ws WHERE ws.word_id = w.word_id && user_id = ?) != 0 " +
+                "ORDER BY RAND() LIMIT 1;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, user_id);
+            statement.setLong(2, user_id);
+            statement.setLong(3, user_id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next())
+                    return new Word(resultSet.getString(1), resultSet.getString(2));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

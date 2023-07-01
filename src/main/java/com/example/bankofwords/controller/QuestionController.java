@@ -42,7 +42,19 @@ public class QuestionController {
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
             long userID = userDAO.getUserID(username);
-            Word correct = wordDAO.getRandomWord(userID);
+
+
+
+            Word correct = null; // use algorithm to generate word to serve
+            double randNum = new Random().nextDouble();
+            if (randNum < StatisticsConstants.LEARNING_WORD_SERVE_RATE){
+                correct = wordDAO.getRandomWordWithProgress(userID);
+            }
+
+            // handles both cases: 1. algorithm should generate random word and 2. user has no progress on any words
+            if (correct == null){
+                correct = wordDAO.getRandomWord(userID);
+            }
 
             if (correct == null) {
                 response.put("error", "No more words left to learn");
