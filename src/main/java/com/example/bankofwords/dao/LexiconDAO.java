@@ -99,7 +99,7 @@ public class LexiconDAO {
     }
 
     public List<String> getWordSynonyms(String word) {
-        String sql = "SELECT w2.word FROM wn_synset AS w1 " +
+        String sql = "SELECT DISTINCT w2.word FROM wn_synset AS w1 " +
                 "JOIN wn_synset AS w2 ON w1.synset_id = w2.synset_id " +
                 "WHERE w1.word = ? AND w1.w_num = 1 AND w2.w_num > 1;";
 
@@ -121,7 +121,7 @@ public class LexiconDAO {
     }
 
     public List<String> getWordAntonyms(String word) {
-        String sql = "SELECT w2.word FROM wn_synset AS w1 " +
+        String sql = "SELECT DISTINCT w2.word FROM wn_synset AS w1 " +
                 "JOIN wn_antonym AS a ON w1.synset_id = a.synset_id_1 " +
                 "JOIN wn_synset AS w2 ON a.synset_id_2 = w2.synset_id " +
                 "WHERE w1.word = ?;";

@@ -11,10 +11,18 @@ import com.example.bankofwords.singletons.UniqueIdGenerator;
 import com.example.bankofwords.utils.IncorrectWordHeuristics;
 import com.example.bankofwords.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 
@@ -26,13 +34,16 @@ public class QuestionController {
     private final UserDAO userDAO;
     private final JwtUtil jwtUtil;
     private final StatisticsDAO statisticsDAO;
+    private final ResourceLoader resourceLoader;
 
     @Autowired
-    public QuestionController(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO, JwtUtil jwtUtil) {
+    public QuestionController(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO, JwtUtil jwtUtil,
+                              ResourceLoader resourceLoader) {
         this.wordDAO = wordDAO;
         this.userDAO = userDAO;
         this.jwtUtil = jwtUtil;
         this.statisticsDAO = statisticsDAO;
+        this.resourceLoader = resourceLoader;
     }
 
     @GetMapping("/question")
@@ -97,6 +108,33 @@ public class QuestionController {
             Collections.shuffle(choiceStrings);
 
             return getFlashcardResponseEntity(response, correct, choiceStrings);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @GetMapping("/question/image")
+    public ResponseEntity<?> image(@RequestHeader("Authorization") String authHeader) throws IOException {
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (jwtUtil.validateToken(token, username)) {
+            Map<String, Object> response = new HashMap<>();
+
+            Resource resource = resourceLoader.getResource("classpath:static/images/");
+            File[] files = resource.getFile().listFiles((dir, name) -> !name.equals(".DS_Store"));
+
+            if (files == null || files.length == 0) {
+                response.put("error", "No images found");
+                return ResponseEntity.ok(response);
+            }
+
+            File imageFile = files[new Random().nextInt(files.length)];
+
+            long flashcardId = UniqueIdGenerator.getInstance().generateUniqueId();
+            FlashcardAnswers.getInstance().add(flashcardId, imageFile.getName().replace(".jpg", ""));
+            response.put("id", flashcardId);
+
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
