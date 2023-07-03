@@ -9,6 +9,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,21 +33,26 @@ public class ImageController {
     }
 
     @GetMapping("/get/image")
-    public ResponseEntity<Resource> image(@RequestHeader("Authorization") String authHeader, @RequestParam("id") long flashcard_id) {
+    public ResponseEntity<byte[]> image(@RequestHeader("Authorization") String authHeader, @RequestParam("id") long flashcard_id) throws IOException {
+        // Authenticate the user using the provided JWT token
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
-            String imageName = FlashcardAnswers.getInstance().getAnswer(flashcard_id) + ".jpg";
-            Resource resource = resourceLoader.getResource("classpath:static/images/" + imageName);
 
-            if (!resource.exists()) {
-                return ResponseEntity.notFound().build();
-            }
+            String filename = FlashcardAnswers.getInstance().getAnswer(flashcard_id);
+            Resource imageResource = resourceLoader.getResource("classpath:static/images/" + filename + ".jpg");
+
+
+            byte[] imageBytes = Files.readAllBytes(imageResource.getFile().toPath());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+            headers.set("Content-Disposition",
+                    "attachment; filename=\"" + UriUtils.encodePathSegment(filename + ".jpg", "UTF-8") + "\"");
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + imageName + "\"")
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .body(resource);
+                    .headers(headers)
+                    .body(imageBytes);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
