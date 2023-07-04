@@ -1,6 +1,7 @@
 package com.example.bankofwords.controller;
 
 
+import com.example.bankofwords.dao.ImageDAO;
 import com.example.bankofwords.singletons.FlashcardAnswers;
 import com.example.bankofwords.singletons.UniqueIdGenerator;
 import com.example.bankofwords.utils.JwtUtil;
@@ -27,7 +28,7 @@ public class ImageController {
     private final ResourceLoader resourceLoader;
 
     @Autowired
-    public ImageController(JwtUtil jwtUtil, ResourceLoader resourceLoader) {
+    public ImageController(JwtUtil jwtUtil, ResourceLoader resourceLoader, ImageDAO imageDAO) {
         this.jwtUtil = jwtUtil;
         this.resourceLoader = resourceLoader;
     }
