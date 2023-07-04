@@ -1,7 +1,6 @@
 package com.example.bankofwords.dao;
 
 import com.example.bankofwords.objects.Word;
-import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -87,9 +86,10 @@ public class WordDAO {
     }
 
     public Long getWordId(String word, long user_id) {
-        Long userId = getWordIdWithCreator(word, user_id);
-        if (userId != null) {
-            return user_id;
+        Long wordId = getWordIdWithCreator(word, user_id);
+
+        if (wordId != null) {
+            return wordId;
         }
         return getWordIdWithCreator(word, 0);
     }
@@ -218,6 +218,23 @@ public class WordDAO {
                     return new Word(resultSet.getString(1), resultSet.getString(2));
             }
         } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public Long getWordCreator(Long wordId) {
+        String sql = "SELECT creator_id FROM words WHERE word_id = ? ";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, wordId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next())
+                    return resultSet.getLong(1);
+            }
+        } catch (SQLException e) {
+            // Handle any exceptions
             e.printStackTrace();
         }
 
