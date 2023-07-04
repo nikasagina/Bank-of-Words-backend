@@ -87,15 +87,22 @@ public class WordDAO {
     }
 
     public Long getWordId(String word, long user_id) {
-        String sql = "SELECT word_id FROM words WHERE (creator_id = ? || creator_id = 0) && word = ?";
+        Long userId = getWordIdWithCreator(word, user_id);
+        if (userId != null) {
+            return user_id;
+        }
+        return getWordIdWithCreator(word, 0);
+    }
+
+    private Long getWordIdWithCreator(String word, long user_id) {
+        String sql = "SELECT word_id FROM words WHERE creator_id = ? && word = ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user_id);
             statement.setString(2, word);
             try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-
-                return resultSet.getLong(1);
+                if (resultSet.next())
+                    return resultSet.getLong(1);
             }
         } catch (SQLException e) {
             // Handle any exceptions
