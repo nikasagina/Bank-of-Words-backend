@@ -33,14 +33,13 @@ public class ImageController {
     }
 
     @GetMapping("/get/image")
-    public ResponseEntity<byte[]> image(@RequestHeader("Authorization") String authHeader, @RequestParam("id") long flashcard_id) throws IOException {
+    public ResponseEntity<byte[]> image(@RequestHeader("Authorization") String authHeader, @RequestParam("filename") String filename) throws IOException {
         // Authenticate the user using the provided JWT token
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
 
-            String filename = FlashcardAnswers.getInstance().getAnswer(flashcard_id);
-            Resource imageResource = resourceLoader.getResource("classpath:static/images/" + filename + ".jpg");
+            Resource imageResource = resourceLoader.getResource("classpath:static/images/" + filename);
 
 
             byte[] imageBytes = Files.readAllBytes(imageResource.getFile().toPath());
@@ -48,7 +47,7 @@ public class ImageController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.IMAGE_JPEG);
             headers.set("Content-Disposition",
-                    "attachment; filename=\"" + UriUtils.encodePathSegment(filename + ".jpg", "UTF-8") + "\"");
+                    "attachment; filename=\"" + UriUtils.encodePathSegment(filename, "UTF-8") + "\"");
 
             return ResponseEntity.ok()
                     .headers(headers)

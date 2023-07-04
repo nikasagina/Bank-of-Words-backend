@@ -1,9 +1,6 @@
 package com.example.bankofwords.config;
 
-import com.example.bankofwords.dao.LexiconDAO;
-import com.example.bankofwords.dao.StatisticsDAO;
-import com.example.bankofwords.dao.UserDAO;
-import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.dao.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -71,5 +68,10 @@ public class Config {
     @Bean
     public Set<String> invalidatedTokens() {
         return new HashSet<>();
+    }
+
+    @Bean
+    public ImageDAO imageDAO(DataSource dataSource) {
+        return new ImageDAO(dataSource);
     }
 }

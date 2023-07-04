@@ -2,9 +2,11 @@
 package com.example.bankofwords.controller;
 
 import com.example.bankofwords.constants.StatisticsConstants;
+import com.example.bankofwords.dao.ImageDAO;
 import com.example.bankofwords.dao.StatisticsDAO;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.objects.Image;
 import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.singletons.FlashcardAnswers;
 import com.example.bankofwords.singletons.UniqueIdGenerator;
@@ -35,12 +37,14 @@ public class QuestionController {
     private final JwtUtil jwtUtil;
     private final StatisticsDAO statisticsDAO;
     private final ResourceLoader resourceLoader;
+    private final ImageDAO imageDAO;
 
     @Autowired
-    public QuestionController(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO, JwtUtil jwtUtil,
-                              ResourceLoader resourceLoader) {
+    public QuestionController(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO, ImageDAO imageDAO,
+                              JwtUtil jwtUtil, ResourceLoader resourceLoader) {
         this.wordDAO = wordDAO;
         this.userDAO = userDAO;
+        this.imageDAO = imageDAO;
         this.jwtUtil = jwtUtil;
         this.statisticsDAO = statisticsDAO;
         this.resourceLoader = resourceLoader;
@@ -120,19 +124,21 @@ public class QuestionController {
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
 
-            Resource resource = resourceLoader.getResource("classpath:static/images/");
-            File[] files = resource.getFile().listFiles((dir, name) -> !name.equals(".DS_Store"));
 
-            if (files == null || files.length == 0) {
+            Image image = imageDAO.getRandomImage(userDAO.getUserID(username));
+
+            if (image == null ) {
                 response.put("error", "No images found");
                 return ResponseEntity.ok(response);
             }
+            String filename = image.getImageName();
+            Word word = wordDAO.getWordWithId(image.getWordId());
 
-            File imageFile = files[new Random().nextInt(files.length)];
 
             long flashcardId = UniqueIdGenerator.getInstance().generateUniqueId();
-            FlashcardAnswers.getInstance().add(flashcardId, imageFile.getName().replace(".jpg", ""));
+            FlashcardAnswers.getInstance().add(flashcardId, word.getWord());
             response.put("id", flashcardId);
+            response.put("filename", filename);
 
             return ResponseEntity.ok(response);
         } else {

@@ -22,7 +22,7 @@ public class WordDAO {
 
 
     public Word getRandomWord(long user_id) {
-        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
+        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && definition != '' && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 ORDER BY RAND() LIMIT 1;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -42,8 +42,8 @@ public class WordDAO {
 
     public List<Word> getIncorrectWords(Word correct, long user_id) {
         List<Word> result = new ArrayList<>();
-        String sql = "SELECT word, definition FROM words w WHERE creator_id = ? || creator_id = 0 AND word != ? && " +
-                "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 " +
+        String sql = "SELECT word, definition FROM words w WHERE creator_id = ? || creator_id = 0 AND word != ? " +
+                "&& definition != '' && (SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 " +
                 "ORDER BY RAND() LIMIT ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -69,7 +69,7 @@ public class WordDAO {
 
     public Word getWordWithId(long word_id) {
         if (word_id == 0) return null;
-        String sql = "SELECT word, definition FROM words WHERE word_id = ?";
+        String sql = "SELECT word, definition FROM words WHERE word_id = ? ";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, word_id);
@@ -197,7 +197,7 @@ public class WordDAO {
 
     // Random word that the user has already seen
     public Word getRandomWordWithProgress(long user_id) {
-        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
+        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && definition != '' && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 && " +
                 "(SELECT COUNT(*) FROM word_statistics ws WHERE ws.word_id = w.word_id && user_id = ?) != 0 " +
                 "ORDER BY RAND() LIMIT 1;";

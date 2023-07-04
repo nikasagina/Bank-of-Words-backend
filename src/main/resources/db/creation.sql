@@ -4,6 +4,7 @@ USE bank_of_words_db;
 
 DROP TABLE IF EXISTS word_statistics;
 DROP TABLE IF EXISTS known_words;
+DROP TABLE IF EXISTS word_images;
 DROP TABLE IF EXISTS words;
 DROP TABLE IF EXISTS users;
 
@@ -40,6 +41,12 @@ CREATE TABLE word_statistics (
                              PRIMARY KEY (user_id, word_id)
 );
 
+CREATE TABLE word_images (
+                             image_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                             word_id BIGINT NOT NULL,
+                             image_name VARCHAR(255) NOT NULL,
+                             FOREIGN KEY (word_id) REFERENCES words(word_id)
+);
 
 
 INSERT INTO words (word, definition) VALUES ('hello', 'Used as a greeting or to begin a phone conversation.');
