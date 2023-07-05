@@ -121,4 +121,25 @@ public class UserDAO {
 
         return null;
     }
+
+    public User getUserById(long userId) {
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()){
+                    String username = resultSet.getString("username");
+                    String email = resultSet.getString("email");
+                    LocalDateTime joinDate = resultSet.getTimestamp("join_date").toLocalDateTime();
+
+                    return new User(username, email, joinDate);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

@@ -74,4 +74,9 @@ public class Config {
     public ImageDAO imageDAO(DataSource dataSource) {
         return new ImageDAO(dataSource);
     }
+
+    @Bean
+    public WordHistoryDAO wordHistoryDAO(DataSource dataSource) {
+        return new WordHistoryDAO(dataSource, new UserDAO(dataSource));
+    }
 }

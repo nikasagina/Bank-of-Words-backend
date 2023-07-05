@@ -5,6 +5,7 @@ USE bank_of_words_db;
 DROP TABLE IF EXISTS word_statistics;
 DROP TABLE IF EXISTS known_words;
 DROP TABLE IF EXISTS word_images;
+DROP TABLE IF EXISTS ord_history;
 DROP TABLE IF EXISTS words;
 DROP TABLE IF EXISTS users;
 
@@ -46,6 +47,16 @@ CREATE TABLE word_images (
                              word_id BIGINT NOT NULL,
                              image_name VARCHAR(255) NOT NULL,
                              FOREIGN KEY (word_id) REFERENCES words(word_id)
+);
+
+CREATE TABLE word_history (
+                              user_id BIGINT NOT NULL,
+                              word_id BIGINT NOT NULL,
+                              correct BOOLEAN NOT NULL,
+                              answer_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                              FOREIGN KEY (user_id) REFERENCES users(user_id),
+                              FOREIGN KEY (word_id) REFERENCES words(word_id),
+                              PRIMARY KEY (user_id, word_id, answer_date)
 );
 
 

@@ -2,10 +2,7 @@
 package com.example.bankofwords.controller;
 
 import com.example.bankofwords.constants.StatisticsConstants;
-import com.example.bankofwords.dao.ImageDAO;
-import com.example.bankofwords.dao.StatisticsDAO;
-import com.example.bankofwords.dao.UserDAO;
-import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.dao.*;
 import com.example.bankofwords.objects.Image;
 import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.singletons.FlashcardAnswers;
@@ -29,15 +26,17 @@ public class QuestionController {
     private final JwtUtil jwtUtil;
     private final StatisticsDAO statisticsDAO;
     private final ImageDAO imageDAO;
+    private final WordHistoryDAO wordHistoryDAO;
 
     @Autowired
     public QuestionController(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO, ImageDAO imageDAO,
-                              JwtUtil jwtUtil) {
+                              JwtUtil jwtUtil, WordHistoryDAO wordHistoryDAO) {
         this.wordDAO = wordDAO;
         this.userDAO = userDAO;
         this.imageDAO = imageDAO;
         this.jwtUtil = jwtUtil;
         this.statisticsDAO = statisticsDAO;
+        this.wordHistoryDAO = wordHistoryDAO;
     }
 
     @GetMapping("/question")
@@ -169,6 +168,7 @@ public class QuestionController {
             response.put("correct", isCorrect);
             response.put("answer", correctAnswer);
 
+            wordHistoryDAO.recordAnswer(userId, wordId, isCorrect);
             if (isCorrect) {
                 statisticsDAO.incrementCorrectAndTotal(userId, wordId);
             } else {

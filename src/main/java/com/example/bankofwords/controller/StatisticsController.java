@@ -3,6 +3,7 @@ package com.example.bankofwords.controller;
 import com.example.bankofwords.dao.StatisticsDAO;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.dao.WordHistoryDAO;
 import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,16 @@ public class StatisticsController {
     private final UserDAO userDAO;
     private final JwtUtil jwtUtil;
     private final StatisticsDAO statisticsDAO;
+    private final WordHistoryDAO wordHistoryDAO;
 
     @Autowired
-    public StatisticsController(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO, JwtUtil jwtUtil) {
+    public StatisticsController(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO,
+                                WordHistoryDAO wordHistoryDAO, JwtUtil jwtUtil) {
         this.wordDAO = wordDAO;
         this.userDAO = userDAO;
         this.jwtUtil = jwtUtil;
         this.statisticsDAO = statisticsDAO;
+        this.wordHistoryDAO = wordHistoryDAO;
     }
 
     @GetMapping("/user")
@@ -128,4 +132,19 @@ public class StatisticsController {
         }
     }
 
+    @GetMapping("/user/activity")
+    public ResponseEntity<?> getUserActivity(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (jwtUtil.validateToken(token, username)) {
+            Map<String, Object> response = new HashMap<>();
+
+            long userId = userDAO.getUserID(username);
+            response.put("activity", wordHistoryDAO.getFullDailyActivity(userId));
+
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
 }
