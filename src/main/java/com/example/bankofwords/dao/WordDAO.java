@@ -41,7 +41,7 @@ public class WordDAO {
 
     public List<Word> getIncorrectWords(Word correct, long user_id) {
         List<Word> result = new ArrayList<>();
-        String sql = "SELECT word, definition FROM words w WHERE creator_id = ? || creator_id = 0 AND word != ? " +
+        String sql = "SELECT DISTINCT word, definition FROM words w WHERE creator_id = ? || creator_id = 0 AND word != ? " +
                 "&& definition != '' && (SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 " +
                 "ORDER BY RAND() LIMIT ?";
         try (Connection connection = dataSource.getConnection();
@@ -174,17 +174,29 @@ public class WordDAO {
 
     public List<Word> getAllLearningWords(long userId) {
         String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
-                "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0;";
-        return getWordList(userId, sql);
+                "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 &&" +
+                "(SELECT count(total_count) FROM word_statistics ws WHERE ws.user_id = ? && ws.word_id = w.word_id) > 0;";
+        List<Word> result = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, userId);
+            statement.setLong(2, userId);
+            statement.setLong(3, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()){
+                    result.add(new Word(resultSet.getString(1), resultSet.getString(2)));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     public List<Word> getAllLearnedWords(long userId) {
         String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) != 0;";
-        return getWordList(userId, sql);
-    }
-
-    private List<Word> getWordList(long userId, String sql) {
         List<Word> result = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
