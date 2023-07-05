@@ -5,7 +5,7 @@ USE bank_of_words_db;
 DROP TABLE IF EXISTS word_statistics;
 DROP TABLE IF EXISTS known_words;
 DROP TABLE IF EXISTS word_images;
-DROP TABLE IF EXISTS ord_history;
+DROP TABLE IF EXISTS word_history;
 DROP TABLE IF EXISTS words;
 DROP TABLE IF EXISTS users;
 
