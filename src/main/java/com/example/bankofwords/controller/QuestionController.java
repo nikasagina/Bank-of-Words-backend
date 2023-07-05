@@ -13,18 +13,10 @@ import com.example.bankofwords.singletons.UniqueIdGenerator;
 import com.example.bankofwords.utils.IncorrectWordHeuristics;
 import com.example.bankofwords.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 
 
@@ -36,18 +28,16 @@ public class QuestionController {
     private final UserDAO userDAO;
     private final JwtUtil jwtUtil;
     private final StatisticsDAO statisticsDAO;
-    private final ResourceLoader resourceLoader;
     private final ImageDAO imageDAO;
 
     @Autowired
     public QuestionController(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO, ImageDAO imageDAO,
-                              JwtUtil jwtUtil, ResourceLoader resourceLoader) {
+                              JwtUtil jwtUtil) {
         this.wordDAO = wordDAO;
         this.userDAO = userDAO;
         this.imageDAO = imageDAO;
         this.jwtUtil = jwtUtil;
         this.statisticsDAO = statisticsDAO;
-        this.resourceLoader = resourceLoader;
     }
 
     @GetMapping("/question")
@@ -118,7 +108,7 @@ public class QuestionController {
     }
 
     @GetMapping("/question/image")
-    public ResponseEntity<?> image(@RequestHeader("Authorization") String authHeader) throws IOException {
+    public ResponseEntity<?> image(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {

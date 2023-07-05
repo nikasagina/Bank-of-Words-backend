@@ -1,7 +1,6 @@
 package com.example.bankofwords.dao;
 
 import com.example.bankofwords.objects.Image;
-import com.example.bankofwords.objects.Word;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

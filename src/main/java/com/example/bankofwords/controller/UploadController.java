@@ -62,12 +62,10 @@ public class UploadController {
                 response.put("successful", true);
 
                 long wordId = wordDAO.getWordId(word, userId);
-                System.out.println(wordId);
                 if (image != null && !image.isEmpty()) {
-                    String imageName = word + "_" + UUID.randomUUID().toString() + ".jpg";
-                    System.out.println(imageName);
+                    String imageName = word + "_" + UUID.randomUUID() + ".jpg";
                     Path imagePath = Paths.get("src/main/resources/static/images/" + imageName);
-                    System.out.println(imagePath);
+
                     try {
                         Files.write(imagePath, image.getBytes());
                         imageDAO.addImage(wordId, imageName);
@@ -92,8 +90,19 @@ public class UploadController {
         if (jwtUtil.validateToken(token, username)) {
             if (image != null && !image.isEmpty()) {
                 long userId = userDAO.getUserID(username);
-                long wordId = wordDAO.getWordId(word, userId);
-                String imageName = userId + "_" + word + "_" + UUID.randomUUID().toString() + ".jpg";
+                Long wordId = wordDAO.getWordId(word, userId);
+
+                if (wordId == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Word not found");
+                }
+
+                // if the user want to add picture to the initial word, copy the initial word to the users words
+                if (wordDAO.getWordCreator(wordId) == 0) {
+                    wordDAO.addWord(userId, word, wordDAO.getWordWithId(wordId).getDefinition());
+                    wordId = wordDAO.getWordId(word, userId);
+                }
+
+                String imageName = userId + "_" + word + "_" + UUID.randomUUID() + ".jpg";
                 Path imagePath = Paths.get("src/main/resources/static/images/" + imageName);
                 try {
                     Files.write(imagePath, image.getBytes());
