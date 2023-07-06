@@ -21,8 +21,8 @@ public class ImageController {
         this.jwtUtil = jwtUtil;
     }
 
-    @GetMapping("/get/image")
-    public ResponseEntity<byte[]> image(@RequestHeader("Authorization") String authHeader, @RequestParam("filename") String filename) throws IOException {
+    @GetMapping("/images/{filename}")
+    public ResponseEntity<byte[]> image(@RequestHeader("Authorization") String authHeader, @PathVariable("filename") String filename) throws IOException {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {

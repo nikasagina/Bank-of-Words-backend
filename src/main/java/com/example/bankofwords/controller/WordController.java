@@ -56,9 +56,9 @@ public class WordController {
         }
     }
 
-    @GetMapping("/definitions")
+    @GetMapping("/{word}/definitions")
     public ResponseEntity<?> getDefinitions(@RequestHeader("Authorization") String authHeader,
-                                            @RequestParam("word") String word) {
+                                            @PathVariable("word") String word) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
@@ -74,9 +74,9 @@ public class WordController {
         }
     }
 
-    @GetMapping("/info")
+    @GetMapping("/{word}/info")
     public ResponseEntity<?> getWordInfo(@RequestHeader("Authorization") String authHeader,
-                                            @RequestParam("word") String word) {
+                                         @PathVariable("word") String word) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
@@ -98,42 +98,6 @@ public class WordController {
             response.put("examples", lexiconDAO.getDefinitionExamples(word, definition));
             response.put("synonyms", lexiconDAO.getWordSynonyms(word));
             response.put("antonyms", lexiconDAO.getWordAntonyms(word));
-
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @GetMapping("/learning")
-    public ResponseEntity<?> getAllLearningWords(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long userId = userDAO.getUserID(username);
-            List<Word> words = wordDAO.getAllLearningWords(userId);
-
-            response.put("learning_words", words);
-
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @GetMapping("/learned")
-    public ResponseEntity<?> getAllLearnedWords(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (jwtUtil.validateToken(token, username)) {
-            Map<String, Object> response = new HashMap<>();
-
-            long userId = userDAO.getUserID(username);
-            List<Word> words = wordDAO.getAllLearnedWords(userId);
-
-            response.put("learned_words", words);
 
             return ResponseEntity.ok(response);
         } else {

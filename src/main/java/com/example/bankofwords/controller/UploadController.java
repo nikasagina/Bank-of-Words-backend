@@ -81,9 +81,9 @@ public class UploadController {
         }
     }
 
-    @PostMapping("/word/image")
+    @PostMapping("/{word}/image")
     public ResponseEntity<?> addImageToWord(@RequestHeader("Authorization") String authHeader,
-                                            @RequestParam("word") String word,
+                                            @PathVariable("word") String word,
                                             @RequestParam("image") MultipartFile image) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
