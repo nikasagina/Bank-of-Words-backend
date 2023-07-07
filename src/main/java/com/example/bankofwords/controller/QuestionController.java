@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("api/question")
 public class QuestionController {
 
     private final QuestionService questionService;
@@ -16,21 +16,21 @@ public class QuestionController {
         this.questionService = questionService;
     }
 
-    @GetMapping("/question")
+    @GetMapping("/default/{tableId}")
     public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader,
-                                   @RequestParam(value = "tableId", required = false) Long tableId) {
+                                   @PathVariable(value = "tableId", required = false) Long tableId) {
         return questionService.start(authHeader, tableId);
     }
 
-    @GetMapping("/question/spelling")
+    @GetMapping("/spelling/{tableId}")
     public ResponseEntity<?> spelling(@RequestHeader("Authorization") String authHeader,
-                                      @RequestParam(value = "tableId", required = false) Long tableId) {
+                                      @PathVariable(value = "tableId", required = false) Long tableId) {
         return questionService.spelling(authHeader, tableId);
     }
 
-    @GetMapping("/question/image")
+    @GetMapping("/image/{tableId}")
     public ResponseEntity<?> image(@RequestHeader("Authorization") String authHeader,
-                                   @RequestParam(value = "tableId", required = false) Long tableId) {
+                                   @PathVariable(value = "tableId", required = false) Long tableId) {
         return questionService.image(authHeader, tableId);
     }
 
