@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS word_images;
 DROP TABLE IF EXISTS word_history;
 DROP TABLE IF EXISTS words;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS tables;
 
 CREATE TABLE users (
                        user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -17,11 +18,17 @@ CREATE TABLE users (
                        join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE tables (
+                        table_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        creator_id INT,
+                        table_name VARCHAR(255)
+);
+
 CREATE TABLE words (
-                             word_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                             word VARCHAR(255) NOT NULL,
-                             definition TEXT NOT NULL,
-                             creator_id BIGINT NOT NULL DEFAULT 0
+                       word_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                       word VARCHAR(255) NOT NULL,
+                       definition TEXT NOT NULL,
+                       table_id BIGINT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE known_words (
@@ -60,6 +67,7 @@ CREATE TABLE word_history (
 );
 
 
+INSERT INTO tables (table_id, creator_id, table_name) VALUES (1, 0, 'initial table');
 INSERT INTO words (word, definition) VALUES ('hello', 'Used as a greeting or to begin a phone conversation.');
 INSERT INTO words (word, definition) VALUES ('world', 'The earth, together with all of its countries and peoples.');
 INSERT INTO words (word, definition) VALUES ('computer', 'An electronic device capable of performing various tasks by executing pre-programmed instructions.');

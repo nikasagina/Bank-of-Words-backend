@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
+import javax.xml.crypto.Data;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -78,5 +79,9 @@ public class Config {
     @Bean
     public WordHistoryDAO wordHistoryDAO(DataSource dataSource) {
         return new WordHistoryDAO(dataSource, new UserDAO(dataSource));
+    }
+
+    @Bean TableDAO tableDAO(DataSource dataSource) {
+        return new TableDAO(dataSource);
     }
 }
