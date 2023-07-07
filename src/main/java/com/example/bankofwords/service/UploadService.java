@@ -1,9 +1,6 @@
 package com.example.bankofwords.service;
 
-import com.example.bankofwords.dao.ImageDAO;
-import com.example.bankofwords.dao.LexiconDAO;
-import com.example.bankofwords.dao.UserDAO;
-import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.dao.*;
 import com.example.bankofwords.parser.PdfParser;
 import com.example.bankofwords.utils.JwtUtil;
 import com.example.bankofwords.utils.WordUtil;
@@ -28,10 +25,11 @@ public class UploadService {
     private final WordUtil wordUtil;
     private final PdfParser pdfParser;
     private final ImageDAO imageDAO;
+    private final TableDAO tableDAO;
 
     @Autowired
     public UploadService(WordDAO wordDAO, UserDAO userDAO, JwtUtil jwtUtil, LexiconDAO lexiconDAO,
-                            WordUtil wordUtil, PdfParser pdfParser, ImageDAO imageDAO) {
+                         WordUtil wordUtil, PdfParser pdfParser, ImageDAO imageDAO, TableDAO tableDAO) {
         this.wordDAO = wordDAO;
         this.userDAO = userDAO;
         this.jwtUtil = jwtUtil;
@@ -39,20 +37,21 @@ public class UploadService {
         this.wordUtil = wordUtil;
         this.pdfParser = pdfParser;
         this.imageDAO = imageDAO;
+        this.tableDAO = tableDAO;
     }
 
 
-    public ResponseEntity<?> uploadWord(String authHeader, String word, String definition, MultipartFile image) {
+    public ResponseEntity<?> uploadWord(String authHeader, long tableId, String word, String definition, MultipartFile image) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
 
             long userId = userDAO.getUserID(username);
-            if (wordDAO.userWordsContain(userId, word)) {
+            if (tableDAO.containsWord(tableId, word)) {
                 response.put("successful", false);
             } else {
-                wordDAO.addWord(userId, word, definition);
+                wordDAO.addWord(tableId, word, definition);
                 response.put("successful", true);
 
                 long wordId = wordDAO.getWordId(word, userId);
@@ -75,7 +74,7 @@ public class UploadService {
         }
     }
 
-    public ResponseEntity<?> addImageToWord(String authHeader, String word, MultipartFile image) {
+    public ResponseEntity<?> addImageToWord(String authHeader, long tableId, String word, MultipartFile image) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
@@ -89,7 +88,7 @@ public class UploadService {
 
                 // if the user want to add picture to the initial word, copy the initial word to the users words
                 if (wordDAO.getWordCreator(wordId) == 0) {
-                    wordDAO.addWord(userId, word, wordDAO.getWordWithId(wordId).getDefinition());
+                    wordDAO.addWord(tableId, word, wordDAO.getWordWithId(wordId).getDefinition());
                     wordId = wordDAO.getWordId(word, userId);
                 }
 
@@ -112,14 +111,13 @@ public class UploadService {
         }
     }
 
-    public ResponseEntity<?> uploadBook(String authHeader, MultipartFile file) {
+    public ResponseEntity<?> uploadBook(String authHeader, long tableId, MultipartFile file) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             try {
                 String fileExtension = getFileExtension(Objects.requireNonNull(file.getOriginalFilename()));
                 List<String> unknownWords;
-                long userId = userDAO.getUserID(username);
 
                 if (fileExtension.equals("pdf")) {
                     unknownWords = pdfParser.parsePdf(file);
@@ -131,10 +129,10 @@ public class UploadService {
                 Map<String, String> addedWords = new HashMap<>();
 
                 unknownWords.forEach(word -> {
-                    if (!wordDAO.userWordsContain(userId, word) && !wordUtil.isSimple(word) && lexiconDAO.contains(word)) {
+                    if (!tableDAO.containsWord(tableId, word) && !wordUtil.isSimple(word) && lexiconDAO.contains(word)) {
                         String definition = lexiconDAO.getWordDefinition(word);
                         addedWords.put(word, definition);
-                        wordDAO.addWord(userId, word, definition);
+                        wordDAO.addWord(tableId, word, definition);
                     }
                 });
 

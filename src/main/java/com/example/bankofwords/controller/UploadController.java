@@ -18,23 +18,26 @@ public class UploadController {
 
     @PostMapping("/word")
     public ResponseEntity<?> uploadWord(@RequestHeader("Authorization") String authHeader,
+                                        @RequestParam("tableId") Long tableId,
                                         @RequestParam("word") String word,
                                         @RequestParam("definition") String definition,
                                         @RequestParam(value = "image", required = false) MultipartFile image) {
-        return uploadService.uploadWord(authHeader, word, definition, image);
+        return uploadService.uploadWord(authHeader, tableId, word, definition, image);
     }
 
     @PostMapping("/{word}/image")
     public ResponseEntity<?> addImageToWord(@RequestHeader("Authorization") String authHeader,
+                                            @RequestParam("tableId") Long tableId,
                                             @PathVariable("word") String word,
                                             @RequestParam("image") MultipartFile image) {
-        return uploadService.addImageToWord(authHeader, word, image);
+        return uploadService.addImageToWord(authHeader, tableId, word, image);
     }
 
 
     @PostMapping("/book")
     public ResponseEntity<?> uploadBook(@RequestHeader("Authorization") String authHeader,
+                                        @RequestParam("tableId") Long tableId,
                                         @RequestParam("file") MultipartFile file) {
-        return uploadService.uploadBook(authHeader, file);
+        return uploadService.uploadBook(authHeader, tableId, file);
     }
 }

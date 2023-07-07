@@ -3,28 +3,28 @@ package com.example.bankofwords.objects;
 import java.util.Objects;
 
 public class Word {
-    String word;
-    String definition;
+    private final String word;
+    private final String definition;
+    private final long tableId;
 
-    public Word(String word, String definition) {
+    public Word(String word, String definition, long tableId) {
         this.word = word;
         this.definition = definition;
+        this.tableId = tableId;
     }
 
     public String getWord() {
         return word;
     }
 
-    public void setWord(String word) {
-        this.word = word;
-    }
 
     public String getDefinition() {
         return definition;
     }
 
-    public void setDefinition(String definition) {
-        this.definition = definition;
+
+    public long getTableId() {
+        return tableId;
     }
 
     @Override
@@ -32,6 +32,7 @@ public class Word {
         return "Word{" +
                 "word='" + word + '\'' +
                 ", definition='" + definition + '\'' +
+                ", tableId='" + tableId + '\'' +
                 '}';
     }
 
@@ -40,7 +41,7 @@ public class Word {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Word word1 = (Word) o;
-        return Objects.equals(word, word1.word);
+        return Objects.equals(word, word1.word) && tableId == word1.tableId;
     }
 
     @Override

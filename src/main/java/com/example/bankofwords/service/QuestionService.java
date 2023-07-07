@@ -36,32 +36,46 @@ public class QuestionService {
         this.wordHistoryDAO = wordHistoryDAO;
     }
 
-    public ResponseEntity<?> start(String authHeader) {
+    public ResponseEntity<?> start(String authHeader, Long tableId) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
             long userID = userDAO.getUserID(username);
 
-
-
             Word correct = null; // use algorithm to generate word to serve
             double randNum = new Random().nextDouble();
             if (randNum < StatisticsConstants.LEARNING_WORD_SERVE_RATE){
-                correct = wordDAO.getRandomWordWithProgress(userID);
+                if (tableId == null) {
+                    correct = wordDAO.getRandomWordWithProgressFromAll(userID);
+                } else {
+                    correct = wordDAO.getRandomWordWithProgressFromTable(tableId);
+                }
             }
 
             // handles both cases: 1. algorithm should generate random word and 2. user has no progress on any words
             if (correct == null){
-                correct = wordDAO.getRandomWord(userID);
+                if (tableId == null) {
+                    correct = wordDAO.getRandomWordFromAll(userID);
+                } else {
+                    correct = wordDAO.getRandomWordFromTable(tableId);
+                }
             }
 
             if (correct == null) {
                 response.put("error", "No more words left to learn");
                 return ResponseEntity.ok(response);
             }
+            System.out.println("BING");
+            System.out.println(correct.getWord());
+            List<Word> choiceObjects;
+            if (tableId == null) {
+                choiceObjects = wordDAO.getIncorrectWordsFromAll(correct, userID);
+            } else {
+                choiceObjects = wordDAO.getIncorrectWordsFromTable(correct, tableId);
+            }
+            System.out.println(choiceObjects);
 
-            List<Word> choiceObjects = wordDAO.getIncorrectWords(correct, userID);
 
             choiceObjects.add(correct);
             Collections.shuffle(choiceObjects);
@@ -77,13 +91,19 @@ public class QuestionService {
         }
     }
 
-    public ResponseEntity<?> spelling(String authHeader) {
+    public ResponseEntity<?> spelling(String authHeader, Long tableId) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
             long userID = userDAO.getUserID(username);
-            Word correct = wordDAO.getRandomWord(userID);
+
+            Word correct;
+            if (tableId == null) {
+                correct = wordDAO.getRandomWordFromAll(userID);
+            } else {
+                correct = wordDAO.getRandomWordFromTable(tableId);
+            }
 
             if (correct == null) {
                 response.put("error", "No more words left to learn");
@@ -101,14 +121,18 @@ public class QuestionService {
         }
     }
 
-    public ResponseEntity<?> image(String authHeader) {
+    public ResponseEntity<?> image(String authHeader, Long tableId) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
 
-
-            Image image = imageDAO.getRandomImage(userDAO.getUserID(username));
+            Image image;
+            if (tableId == null) {
+                image = imageDAO.getRandomImage(userDAO.getUserID(username));
+            } else {
+                image = imageDAO.getRandomImage(userDAO.getUserID(username));
+            }
 
             if (image == null ) {
                 response.put("error", "No images found");

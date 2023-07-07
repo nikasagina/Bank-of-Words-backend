@@ -17,18 +17,21 @@ public class QuestionController {
     }
 
     @GetMapping("/question")
-    public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader) {
-        return questionService.start(authHeader);
+    public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader,
+                                   @RequestParam(value = "tableId", required = false) Long tableId) {
+        return questionService.start(authHeader, tableId);
     }
 
     @GetMapping("/question/spelling")
-    public ResponseEntity<?> spelling(@RequestHeader("Authorization") String authHeader) {
-        return questionService.spelling(authHeader);
+    public ResponseEntity<?> spelling(@RequestHeader("Authorization") String authHeader,
+                                      @RequestParam(value = "tableId", required = false) Long tableId) {
+        return questionService.spelling(authHeader, tableId);
     }
 
     @GetMapping("/question/image")
-    public ResponseEntity<?> image(@RequestHeader("Authorization") String authHeader) {
-        return questionService.image(authHeader);
+    public ResponseEntity<?> image(@RequestHeader("Authorization") String authHeader,
+                                   @RequestParam(value = "tableId", required = false) Long tableId) {
+        return questionService.image(authHeader, tableId);
     }
 
     @PostMapping("/answer")

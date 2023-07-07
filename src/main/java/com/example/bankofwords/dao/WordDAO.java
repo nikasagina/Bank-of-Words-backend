@@ -20,17 +20,16 @@ public class WordDAO {
     }
 
 
-    public Word getRandomWord(long user_id) {
-        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && definition != '' && " +
+    public Word getRandomWordFromAll(long user_id) {
+        String sql = "SELECT word, definition, table_id FROM words w JOIN tables t USING(table_id) WHERE (creator_id = ? || creator_id = 0) && definition != '' && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 ORDER BY RAND() LIMIT 1;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user_id);
             statement.setLong(2, user_id);
             try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-
-                return new Word(resultSet.getString(1), resultSet.getString(2));
+                if (resultSet.next())
+                    return new Word(resultSet.getString(1), resultSet.getString(2), resultSet.getLong(3));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -39,9 +38,26 @@ public class WordDAO {
         return null;
     }
 
-    public List<Word> getIncorrectWords(Word correct, long user_id) {
+    public Word getRandomWordFromTable(long tableId) {
+        String sql = "SELECT word, definition FROM words w JOIN tables t USING(table_id) WHERE t.table_id = ? && " +
+                "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = t.creator_id) = 0 ORDER BY RAND() LIMIT 1;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, tableId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next())
+                    return new Word(resultSet.getString(1), resultSet.getString(2), tableId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public List<Word> getIncorrectWordsFromAll(Word correct, long user_id) {
         List<Word> result = new ArrayList<>();
-        String sql = "SELECT DISTINCT word, definition FROM words w WHERE creator_id = ? || creator_id = 0 AND word != ? " +
+        String sql = "SELECT DISTINCT word, definition, table_id FROM words w JOIN tables t USING(table_id) WHERE creator_id = ? || creator_id = 0 AND word != ? " +
                 "&& definition != '' && (SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 " +
                 "ORDER BY RAND() LIMIT ?";
         try (Connection connection = dataSource.getConnection();
@@ -53,7 +69,33 @@ public class WordDAO {
             try (ResultSet resultSet = statement.executeQuery()) {
 
                 while (resultSet.next()){
-                    result.add(new Word(resultSet.getString(1), resultSet.getString(2)));
+                    result.add(new Word(resultSet.getString(1), resultSet.getString(2), resultSet.getLong(3)));
+                }
+
+                return result;
+            }
+        } catch (SQLException e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public List<Word> getIncorrectWordsFromTable(Word correct, long tableId) {
+        List<Word> result = new ArrayList<>();
+        String sql = "SELECT DISTINCT word, definition FROM words w JOIN tables t USING(table_id) WHERE table_id = ? AND word != ? " +
+                "&& (SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = t.creator_id) = 0 " +
+                "ORDER BY RAND() LIMIT ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, tableId);
+            statement.setString(2, correct.getWord());
+            statement.setInt(3, NUMB_CORRECTS);
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()){
+                    result.add(new Word(resultSet.getString(1), resultSet.getString(2), tableId));
                 }
 
                 return result;
@@ -68,14 +110,13 @@ public class WordDAO {
 
     public Word getWordWithId(long word_id) {
         if (word_id == 0) return null;
-        String sql = "SELECT word, definition FROM words WHERE word_id = ? ";
+        String sql = "SELECT word, definition, table_id FROM words WHERE word_id = ? ";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, word_id);
             try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-
-                return new Word(resultSet.getString(1), resultSet.getString(2));
+                if (resultSet.next())
+                    return new Word(resultSet.getString(1), resultSet.getString(2), resultSet.getLong(3));
             }
         } catch (SQLException e) {
             // Handle any exceptions
@@ -95,7 +136,7 @@ public class WordDAO {
     }
 
     private Long getWordIdWithCreator(String word, long user_id) {
-        String sql = "SELECT word_id FROM words WHERE creator_id = ? && word = ?";
+        String sql = "SELECT word_id FROM words JOIN tables t USING(table_id) WHERE creator_id = ? && word = ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user_id);
@@ -143,28 +184,14 @@ public class WordDAO {
         }
     }
 
-    public Boolean userWordsContain(long user_id, String word) {
-        String sql = "SELECT word_id FROM words WHERE word = ? AND (creator_id = 0 || creator_id = ?);";
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, word);
-            statement.setLong(2, user_id);
-            ResultSet resultSet = statement.executeQuery();
-            return resultSet.next();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        return false;
-    }
-
-    public void addWord(long userId, String word, String definition) {
-        String sql = "INSERT INTO words (word, definition, creator_id) value (?, ?, ?);";
+    public void addWord(long tableId, String word, String definition) {
+        String sql = "INSERT INTO words (word, definition, table_id) value (?, ?, ?);";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, word);
             statement.setString(2, definition);
-            statement.setLong(3, userId);
+            statement.setLong(3, tableId);
             statement.execute();
 
         } catch (SQLException e) {
@@ -173,7 +200,7 @@ public class WordDAO {
     }
 
     public List<Word> getAllLearningWords(long userId) {
-        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
+        String sql = "SELECT word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 0) && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 &&" +
                 "(SELECT count(total_count) FROM word_statistics ws WHERE ws.user_id = ? && ws.word_id = w.word_id) > 0;";
         List<Word> result = new ArrayList<>();
@@ -184,7 +211,7 @@ public class WordDAO {
             statement.setLong(3, userId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()){
-                    result.add(new Word(resultSet.getString(1), resultSet.getString(2)));
+                    result.add(new Word(resultSet.getString(1), resultSet.getString(2), resultSet.getLong(3)));
                 }
             }
         } catch (SQLException e) {
@@ -195,7 +222,7 @@ public class WordDAO {
     }
 
     public List<Word> getAllLearnedWords(long userId) {
-        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && " +
+        String sql = "SELECT word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 0) && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) != 0;";
         List<Word> result = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
@@ -204,7 +231,7 @@ public class WordDAO {
             statement.setLong(2, userId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()){
-                    result.add(new Word(resultSet.getString(1), resultSet.getString(2)));
+                    result.add(new Word(resultSet.getString(1), resultSet.getString(2), resultSet.getLong(3)));
                 }
             }
         } catch (SQLException e) {
@@ -215,8 +242,8 @@ public class WordDAO {
     }
 
     // Random word that the user has already seen
-    public Word getRandomWordWithProgress(long user_id) {
-        String sql = "SELECT word, definition FROM words w WHERE (creator_id = ? || creator_id = 0) && definition != '' && " +
+    public Word getRandomWordWithProgressFromAll(long user_id) {
+        String sql = "SELECT word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 0) && definition != '' && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 && " +
                 "(SELECT COUNT(*) FROM word_statistics ws WHERE ws.word_id = w.word_id && user_id = ?) != 0 " +
                 "ORDER BY RAND() LIMIT 1;";
@@ -227,7 +254,27 @@ public class WordDAO {
             statement.setLong(3, user_id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next())
-                    return new Word(resultSet.getString(1), resultSet.getString(2));
+                    return new Word(resultSet.getString(1), resultSet.getString(2), resultSet.getLong(3));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // Random word that the user has already seen
+    public Word getRandomWordWithProgressFromTable(long tableId) {
+        String sql = "SELECT word, definition FROM words w JOIN tables t USING(table_id)  WHERE t.table_id = ? && " +
+                "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = t.creator_id) = 0 && " +
+                "(SELECT COUNT(*) FROM word_statistics ws WHERE ws.word_id = w.word_id && user_id = t.creator_id) != 0 " +
+                "ORDER BY RAND() LIMIT 1;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, tableId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next())
+                    return new Word(resultSet.getString(1), resultSet.getString(2), tableId);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -237,7 +284,7 @@ public class WordDAO {
     }
 
     public Long getWordCreator(Long wordId) {
-        String sql = "SELECT creator_id FROM words WHERE word_id = ? ";
+        String sql = "SELECT creator_id FROM words JOIN tables t USING(table_id) WHERE word_id = ? ";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, wordId);
