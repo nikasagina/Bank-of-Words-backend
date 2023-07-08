@@ -41,6 +41,22 @@ public class TableService {
         }
     }
 
+    public ResponseEntity<?> delete(String authHeader, String tableName) {
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (jwtUtil.validateToken(token, username)) {
+            Map<String, Object> response = new HashMap<>();
+
+            long userId = userDAO.getUserID(username);
+            long tableId = tableDAO.getTableId(userId, tableName);
+            tableDAO.deleteTable(tableId);
+
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
     public ResponseEntity<?> initialTables(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);

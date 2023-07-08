@@ -21,6 +21,12 @@ public class TableController {
         return tableService.create(authHeader, tableName);
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> delete(@RequestHeader("Authorization") String authHeader,
+                                    @RequestParam("tableName") String tableName) {
+        return tableService.delete(authHeader, tableName);
+    }
+
     @GetMapping("/initial")
     public ResponseEntity<?> initialTables(@RequestHeader("Authorization") String authHeader) {
         return tableService.initialTables(authHeader);
