@@ -308,4 +308,15 @@ public class WordDAO {
 
         return null;
     }
+
+    public void deleteWord(long wordId) {
+        String sql = "DELETE FROM words WHERE word_id = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, wordId);
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

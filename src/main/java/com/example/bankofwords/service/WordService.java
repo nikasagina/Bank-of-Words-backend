@@ -52,7 +52,16 @@ public class WordService {
     }
 
     public ResponseEntity<?> delete(String authHeader, long wordId) {
-        return null;
+        String token = authHeader.replace("Bearer ", "");
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (jwtUtil.validateToken(token, username)) {
+
+            wordDAO.deleteWord(wordId);
+
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     public ResponseEntity<?> getDefinitions(String authHeader, String word) {
