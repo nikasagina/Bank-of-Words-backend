@@ -13,21 +13,27 @@ public class WordController {
     @Autowired
     public WordController(WordService wordService) {
         this.wordService = wordService;
-
     }
 
-    @PostMapping("/learn")
-    public ResponseEntity<?> learn(@RequestHeader("Authorization") String authHeader, @RequestParam("word") String word) {
-        return wordService.learn(authHeader, word);
+    @PostMapping("/learn/{wordId}")
+    public ResponseEntity<?> learn(@RequestHeader("Authorization") String authHeader,
+                                   @PathVariable("wordId") long wordId) {
+        return wordService.learn(authHeader, wordId);
     }
 
-    @GetMapping("/{word}/definitions")
+    @DeleteMapping("/delete/{wordId}")
+    public ResponseEntity<?> delete(@RequestHeader("Authorization") String authHeader,
+                                    @PathVariable("wordId") long wordId) {
+        return wordService.delete(authHeader, wordId);
+    }
+
+    @GetMapping("/definitions/{word}")
     public ResponseEntity<?> getDefinitions(@RequestHeader("Authorization") String authHeader,
                                             @PathVariable("word") String word) {
         return wordService.getDefinitions(authHeader, word);
     }
 
-    @GetMapping("/{word}/info")
+    @GetMapping("/info/{word}")
     public ResponseEntity<?> getWordInfo(@RequestHeader("Authorization") String authHeader,
                                          @PathVariable("word") String word) {
         return wordService.getWordInfo(authHeader, word);

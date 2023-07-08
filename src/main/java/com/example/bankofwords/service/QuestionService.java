@@ -66,16 +66,13 @@ public class QuestionService {
                 response.put("error", "No more words left to learn");
                 return ResponseEntity.ok(response);
             }
-            System.out.println("BING");
-            System.out.println(correct.getWord());
+
             List<Word> choiceObjects;
             if (tableId == null) {
                 choiceObjects = wordDAO.getIncorrectWordsFromAll(correct, userID);
             } else {
                 choiceObjects = wordDAO.getIncorrectWordsFromTable(correct, tableId);
             }
-            System.out.println(choiceObjects);
-
 
             choiceObjects.add(correct);
             Collections.shuffle(choiceObjects);
@@ -143,7 +140,7 @@ public class QuestionService {
 
 
             long flashcardId = UniqueIdGenerator.getInstance().generateUniqueId();
-            FlashcardAnswers.getInstance().add(flashcardId, word.getWord());
+            FlashcardAnswers.getInstance().add(flashcardId, word);
             response.put("id", flashcardId);
             response.put("filename", filename);
 
@@ -163,14 +160,15 @@ public class QuestionService {
                 return ResponseEntity.notFound().build();
             }
 
-            String correctAnswer = FlashcardAnswers.getInstance().getAnswer(flashcard_id);
+            Word correctAnswer = FlashcardAnswers.getInstance().getAnswer(flashcard_id);
             FlashcardAnswers.getInstance().remove(flashcard_id);
             long userId = userDAO.getUserID(username);
-            long wordId = wordDAO.getWordId(correctAnswer, userId);
-            boolean isCorrect = correctAnswer.equals(guess);
+            long wordId = correctAnswer.getId();
+            boolean isCorrect = correctAnswer.getWord().equals(guess);
 
             response.put("correct", isCorrect);
-            response.put("answer", correctAnswer);
+            response.put("answer", correctAnswer.getWord());
+            response.put("wordId", correctAnswer.getId());
 
             wordHistoryDAO.recordAnswer(userId, wordId, isCorrect);
             if (isCorrect) {
@@ -192,7 +190,7 @@ public class QuestionService {
 
     private ResponseEntity<?> getFlashcardResponseEntity(Map<String, Object> response, Word correct, List<String> choiceStrings) {
         long flashcardId = UniqueIdGenerator.getInstance().generateUniqueId();
-        FlashcardAnswers.getInstance().add(flashcardId, correct.getWord());
+        FlashcardAnswers.getInstance().add(flashcardId, correct);
 
         response.put("id", flashcardId);
         response.put("question", correct.getDefinition());

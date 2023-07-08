@@ -1,6 +1,7 @@
 package com.example.bankofwords.singletons;
 
 
+import com.example.bankofwords.objects.Word;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -10,7 +11,7 @@ import java.util.Map;
 public final class FlashcardAnswers {
     private static FlashcardAnswers instance;
 
-    private final Map<Long, String> answers;
+    private final Map<Long, Word> answers;
 
     public FlashcardAnswers() {
         answers = new HashMap<>();
@@ -24,19 +25,19 @@ public final class FlashcardAnswers {
         return instance;
     }
 
-    public void add(long id, String answer) {
-        answers.put(id, answer);
+    public void add(long flashcardId, Word answer) {
+        answers.put(flashcardId, answer);
     }
 
-    public String getAnswer(long id) {
-        return answers.get(id);
+    public Word getAnswer(long flashcardId) {
+        return answers.get(flashcardId);
     }
 
-    public void remove(long id) {
-        answers.remove(id);
+    public void remove(long flashcardId) {
+        answers.remove(flashcardId);
     }
 
-    public boolean contains(long id) {
-        return answers.containsKey(id);
+    public boolean contains(long flashcardId) {
+        return answers.containsKey(flashcardId);
     }
 }

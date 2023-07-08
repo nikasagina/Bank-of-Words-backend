@@ -3,6 +3,7 @@ package com.example.bankofwords.service;
 import com.example.bankofwords.dao.LexiconDAO;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,15 +31,13 @@ public class WordService {
         this.lexiconDAO = lexiconDAO;
     }
 
-    public ResponseEntity<?> learn(String authHeader, String word) {
+    public ResponseEntity<?> learn(String authHeader, long wordId) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
 
             long userId = userDAO.getUserID(username);
-            long wordId = wordDAO.getWordId(word, userId);
-
             if (wordDAO.alreadyKnows(userId, wordId)) {
                 response.put("success", false);
             } else {
@@ -50,6 +49,10 @@ public class WordService {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    public ResponseEntity<?> delete(String authHeader, long wordId) {
+        return null;
     }
 
     public ResponseEntity<?> getDefinitions(String authHeader, String word) {
@@ -68,7 +71,6 @@ public class WordService {
         }
     }
 
-    @GetMapping("/{word}/info")
     public ResponseEntity<?> getWordInfo(String authHeader, String word) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
