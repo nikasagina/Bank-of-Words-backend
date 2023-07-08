@@ -319,4 +319,23 @@ public class WordDAO {
             e.printStackTrace();
         }
     }
+
+    public List<Word> getTableWords(long tableId) {
+        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE t.table_id = ?;";
+        List<Word> result = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, tableId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()){
+                    result.add(new Word(resultSet.getLong(1), resultSet.getString(2),
+                            resultSet.getString(3), resultSet.getLong(4)));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
 }

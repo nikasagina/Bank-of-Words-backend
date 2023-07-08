@@ -37,4 +37,11 @@ public class TableController {
     public ResponseEntity<?> userTables(@RequestHeader("Authorization") String authHeader) {
         return tableService.userTables(authHeader);
     }
+
+
+    @GetMapping("/words/{tableId}")
+    public ResponseEntity<?> words(@RequestHeader("Authorization") String authHeader,
+                                   @PathVariable("tableId") long tableId) {
+        return tableService.getWords(authHeader, tableId);
+    }
 }
