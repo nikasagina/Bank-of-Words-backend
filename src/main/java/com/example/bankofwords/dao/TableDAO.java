@@ -97,4 +97,19 @@ public class TableDAO {
 
         return false;
     }
+
+    public boolean existsTable(long userId, String tableName) {
+        String sql = "SELECT * FROM tables WHERE creator_id = ? AND table_name = ?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, userId);
+            statement.setString(2, tableName);
+            ResultSet resultSet = statement.executeQuery();
+            return resultSet.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }
