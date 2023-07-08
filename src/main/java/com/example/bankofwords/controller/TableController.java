@@ -21,10 +21,10 @@ public class TableController {
         return tableService.create(authHeader, tableName);
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete/{tableId}")
     public ResponseEntity<?> delete(@RequestHeader("Authorization") String authHeader,
-                                    @RequestParam("tableName") String tableName) {
-        return tableService.delete(authHeader, tableName);
+                                    @PathVariable("tableId") long tableId) {
+        return tableService.delete(authHeader, tableId);
     }
 
     @GetMapping("/initial")

@@ -2,9 +2,7 @@ package com.example.bankofwords.service;
 
 import com.example.bankofwords.dao.*;
 import com.example.bankofwords.objects.Word;
-import com.example.bankofwords.parser.PdfParser;
 import com.example.bankofwords.utils.JwtUtil;
-import com.example.bankofwords.utils.WordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,14 +48,12 @@ public class TableService {
         }
     }
 
-    public ResponseEntity<?> delete(String authHeader, String tableName) {
+    public ResponseEntity<?> delete(String authHeader, long tableId) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
 
-            long userId = userDAO.getUserID(username);
-            long tableId = tableDAO.getTableId(userId, tableName);
             tableDAO.deleteTable(tableId);
 
             return ResponseEntity.ok(response);
