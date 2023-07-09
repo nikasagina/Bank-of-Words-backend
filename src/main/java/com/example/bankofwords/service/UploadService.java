@@ -88,8 +88,7 @@ public class UploadService {
 
                 // if the user want to add picture to the initial word, copy the initial word to the users words
                 if (wordDAO.getWordCreator(wordId) == 0) {
-                    wordDAO.addWord(tableId, word, wordDAO.getWordWithId(wordId).getDefinition());
-                    wordId = wordDAO.getWordId(word, userId);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Can not add an image to an initial word");
                 }
 
                 String imageName = userId + "_" + word + "_" + UUID.randomUUID() + ".jpg";
