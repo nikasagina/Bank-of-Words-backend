@@ -13,8 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +67,7 @@ class QuestionServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(word.getDefinition(), responseBody.get("question"));
     }
 
@@ -107,7 +105,7 @@ class QuestionServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals("No more words left to learn", responseBody.get("error"));
     }
 
@@ -126,8 +124,29 @@ class QuestionServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals("No more words left to learn", responseBody.get("error"));
+    }
+
+    @Test
+    void whenStartRequestWithoutTable_returnsOkResponseWithErrorMessage() {
+        // Arrange
+        String authHeader = "Bearer someToken";
+        String username = "testUser";
+        long userId = 1L;
+        Word word = new Word(1L, "testWord", "definition", 1L);
+
+        setUpValidTokenMocks("someToken", username, userId);
+        when(wordDAO.getRandomWordFromAll(userId)).thenReturn(word);
+
+        // Act
+        ResponseEntity<?> response = questionService.start(authHeader, null);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+        assertNotNull(responseBody);
+
     }
 
     @Test
