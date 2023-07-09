@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -145,14 +147,19 @@ public class UploadServiceTest {
         when(userDAO.getUserID(username)).thenReturn(userId);
         when(tableDAO.containsWord(tableId, word)).thenReturn(false);
 
-        // Act
-        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, "definition", image);
+        // Mock the Files class and its write method
+        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+            mockedFiles.when(() -> Files.write(Mockito.any(), Mockito.any(byte[].class))).thenReturn(null);
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
-        assertEquals(true, responseBody.get("successful"));
+            // Act
+            ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, "definition", image);
+
+            // Assert
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+            assert responseBody != null;
+            assertEquals(true, responseBody.get("successful"));
+        }
     }
 
     @Test
@@ -203,11 +210,16 @@ public class UploadServiceTest {
         when(wordDAO.getWordId(word, userId)).thenReturn(wordId);
         when(wordDAO.getWordCreator(wordId)).thenReturn(userId);
 
-        // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, word, image);
+        // Mock the Files class and its write method
+        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+            mockedFiles.when(() -> Files.write(Mockito.any(), Mockito.any(byte[].class))).thenReturn(null);
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+            // Act
+            ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, word, image);
+
+            // Assert
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+        }
     }
 
     @Test
