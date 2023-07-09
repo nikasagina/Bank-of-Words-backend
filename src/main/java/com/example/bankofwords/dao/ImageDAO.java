@@ -47,4 +47,8 @@ public class ImageDAO {
             e.printStackTrace();
         }
     }
+
+    public Image getRandomImageFromTable(long userID) {
+        return null;
+    }
 }

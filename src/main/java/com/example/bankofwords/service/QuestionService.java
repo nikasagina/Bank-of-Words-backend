@@ -128,7 +128,7 @@ public class QuestionService {
             if (tableId == null) {
                 image = imageDAO.getRandomImage(userDAO.getUserID(username));
             } else {
-                image = imageDAO.getRandomImage(userDAO.getUserID(username));
+                image = imageDAO.getRandomImageFromTable(tableId);
             }
 
             if (image == null ) {
