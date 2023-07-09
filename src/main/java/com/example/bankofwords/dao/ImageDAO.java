@@ -48,7 +48,20 @@ public class ImageDAO {
         }
     }
 
-    public Image getRandomImageFromTable(long userID) {
+    public Image getRandomImageFromTable(long tableId) {
+        String sql = "SELECT word_id, image_name FROM word_images wi join words w using(word_id) join tables t using(table_id)" +
+                " WHERE t.table_id = ? && (SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id) = 0 ORDER BY RAND() LIMIT 1;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, tableId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next())
+                    return new Image(resultSet.getLong("word_id"), resultSet.getString("image_name"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 }

@@ -17,7 +17,7 @@ public class ImageController {
         this.imageService = imageService;
     }
 
-    @GetMapping("/images/{filename}")
+    @GetMapping("/image/{filename}")
     public ResponseEntity<byte[]> image(@RequestHeader("Authorization") String authHeader, @PathVariable("filename") String filename) throws IOException {
         return imageService.getImage(authHeader, filename);
     }
