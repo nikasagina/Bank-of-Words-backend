@@ -3,6 +3,7 @@ package com.example.bankofwords.service;
 import com.example.bankofwords.dao.*;
 import com.example.bankofwords.objects.Image;
 import com.example.bankofwords.objects.Word;
+import com.example.bankofwords.singletons.FlashcardAnswers;
 import com.example.bankofwords.utils.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -171,7 +172,7 @@ class QuestionServiceTest {
     void whenSpellingRequestWithNoMoreWordsInTable_returnsOkResponseWithErrorMessage() {
         // Arrange
         String authHeader = "Bearer someToken";
-        Long tableId = 1L;
+        long tableId = 1L;
         String username = "testUser";
         long userId = 1L;
 
@@ -184,7 +185,7 @@ class QuestionServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals("No more words left to learn", responseBody.get("error"));
     }
 
@@ -204,7 +205,7 @@ class QuestionServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals("No more words left to learn", responseBody.get("error"));
     }
 
@@ -228,7 +229,7 @@ class QuestionServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(image.getImageName(), responseBody.get("filename"));
     }
 
@@ -267,7 +268,7 @@ class QuestionServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals("No images found", responseBody.get("error"));
     }
 
@@ -291,10 +292,131 @@ class QuestionServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(image.getImageName(), responseBody.get("filename"));
     }
 
-    // Need to add test for answer method
+    @Test
+    void whenAnswerRequestWithInvalidToken_returnsUnauthorizedResponse() {
+        // Arrange
+        String authHeader = "Bearer invalidToken";
+        String username = "testUser";
+
+        when(jwtUtil.getUsernameFromToken("invalidToken")).thenReturn(username);
+        when(jwtUtil.validateToken("invalidToken", username)).thenReturn(false);
+
+        // Act
+        ResponseEntity<?> response = questionService.answer(authHeader, "", 0L);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void whenAnswerRequestWithValidTokenAndCorrectGuess_returnsOkResponseWithCorrectAnswer() {
+        // Arrange
+        String authHeader = "Bearer someToken";
+        String username = "testUser";
+        String guess = "correctGuess";
+        long flashcardId = 1L;
+        long tableId = 1L;
+        long userId = 1L;
+        long wordId = 2L;
+
+        // Mock the dependencies and setup necessary data
+        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
+        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
+        when(userDAO.getUserID(username)).thenReturn(userId);
+        when(statisticsDAO.getTotalCount(userId, wordId)).thenReturn(3);
+        when(statisticsDAO.getUserSuccessRateForWord(userId, wordId)).thenReturn(1.0);
+        FlashcardAnswers flashcardAnswers = FlashcardAnswers.getInstance();
+        Word correctAnswer = new Word(wordId, "correctGuess", "definition", tableId);
+        flashcardAnswers.add(flashcardId, correctAnswer);
+
+
+        // Act
+        ResponseEntity<?> response = questionService.answer(authHeader, guess, flashcardId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+        assertNotNull(responseBody);
+        assertTrue(responseBody.containsKey("correct"));
+        assertTrue(responseBody.containsKey("answer"));
+        assertTrue(responseBody.containsKey("wordId"));
+        assertTrue((Boolean) responseBody.get("correct"));
+        assertEquals("correctGuess", responseBody.get("answer"));
+        assertEquals(wordId, responseBody.get("wordId"));
+
+        // Clean up
+        flashcardAnswers.remove(flashcardId);
+    }
+
+    @Test
+    void whenAnswerRequestWithValidTokenAndIncorrectGuess_returnsOkResponseWithCorrectAnswer() {
+        // Arrange
+        String authHeader = "Bearer someToken";
+        String username = "testUser";
+        String guess = "incorrectGuess";
+        long flashcardId = 1L;
+        long tableId = 1L;
+        long userId = 1L;
+        long wordId = 2L;
+
+        // Mock the dependencies and setup necessary data
+        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
+        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
+        when(userDAO.getUserID(username)).thenReturn(userId);
+        when(statisticsDAO.getTotalCount(userId, wordId)).thenReturn(3);
+        when(statisticsDAO.getUserSuccessRateForWord(userId, wordId)).thenReturn(1.0);
+        FlashcardAnswers flashcardAnswers = FlashcardAnswers.getInstance();
+        Word correctAnswer = new Word(wordId, "correctGuess", "definition", tableId);
+        flashcardAnswers.add(flashcardId, correctAnswer);
+
+
+        // Act
+        ResponseEntity<?> response = questionService.answer(authHeader, guess, flashcardId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+        assertNotNull(responseBody);
+        assertTrue(responseBody.containsKey("correct"));
+        assertTrue(responseBody.containsKey("answer"));
+        assertTrue(responseBody.containsKey("wordId"));
+        assertFalse((Boolean) responseBody.get("correct"));
+        assertEquals("correctGuess", responseBody.get("answer"));
+        assertEquals(wordId, responseBody.get("wordId"));
+
+        // Clean up
+        flashcardAnswers.remove(flashcardId);
+    }
+
+    @Test
+    void whenAnswerRequestWithValidTokenAndInvalidFlashcardId_returnsNotFoundResponse() {
+        // Arrange
+        String authHeader = "Bearer someToken";
+        String username = "testUser";
+        String guess = "guess";
+        long flashcardId = 1L;
+        long tableId = 1L;
+        long wordId = 2L;
+
+        // Mock the dependencies and setup necessary data
+        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
+        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
+        FlashcardAnswers flashcardAnswers = FlashcardAnswers.getInstance();
+        Word correctAnswer = new Word(wordId, "guess", "definition", tableId);
+        flashcardAnswers.add(flashcardId, correctAnswer);
+
+        // Act
+        ResponseEntity<?> response = questionService.answer(authHeader, guess, -1);
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+
+        // Clean up
+        flashcardAnswers.remove(flashcardId);
+    }
 
 }
