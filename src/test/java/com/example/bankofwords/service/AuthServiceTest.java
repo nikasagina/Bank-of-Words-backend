@@ -48,7 +48,7 @@ public class AuthServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertTrue((Boolean) responseBody.get("successful"));
     }
 
@@ -68,7 +68,7 @@ public class AuthServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(false, responseBody.get("successful"));
         assertEquals("Username is not available", responseBody.get("usernameErrorClass"));
         assertNull(responseBody.get("passwordErrorClass"));
@@ -91,7 +91,7 @@ public class AuthServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(jwtToken, responseBody.get("token"));
     }
 
@@ -109,7 +109,7 @@ public class AuthServiceTest {
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals("Invalid login credentials.", responseBody.get("error"));
     }
 
@@ -146,7 +146,7 @@ public class AuthServiceTest {
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals("Invalid Token", responseBody.get("error"));
     }
 }

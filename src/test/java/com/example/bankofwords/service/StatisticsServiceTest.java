@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.Double.NaN;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,7 +106,7 @@ public class StatisticsServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(0L, responseBody.get("total_guesses_count"));
         assertEquals(0L, responseBody.get("success_guesses_count"));
         assertNull(responseBody.get("success_rate"));
@@ -139,7 +138,7 @@ public class StatisticsServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(1L, responseBody.get("total_guesses_count"));
         assertEquals(1L, responseBody.get("success_guesses_count"));
         assertEquals(1.0, responseBody.get("success_rate"));
@@ -166,7 +165,7 @@ public class StatisticsServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertNull(responseBody.get("activity"));
     }
 
@@ -191,7 +190,7 @@ public class StatisticsServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertNull(responseBody.get("most_guessed_word"));
         assertNull(responseBody.get("least_guessed_word"));
         assertNull(responseBody.get("top_user"));
@@ -221,7 +220,7 @@ public class StatisticsServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(word.getWord(), responseBody.get("most_guessed_word"));
         assertEquals(word.getWord(), responseBody.get("least_guessed_word"));
         assertEquals(username, responseBody.get("top_user"));

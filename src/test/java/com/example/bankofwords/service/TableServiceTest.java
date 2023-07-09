@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -85,7 +86,7 @@ public class TableServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(false, responseBody.get("success"));
     }
 
@@ -109,7 +110,7 @@ public class TableServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(true, responseBody.get("success"));
     }
 
@@ -151,7 +152,7 @@ public class TableServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(List.of(table), responseBody.get("tables"));
     }
 
@@ -175,7 +176,7 @@ public class TableServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(List.of(table), responseBody.get("tables"));
     }
 
@@ -198,7 +199,7 @@ public class TableServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(wordList, responseBody.get("words"));
     }
 }

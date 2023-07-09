@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -77,7 +78,7 @@ public class UserServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(user.getUsername(), responseBody.get("username"));
         assertEquals(user.getEmail(), responseBody.get("email"));
         assertEquals(user.getFormattedJoinDate(), responseBody.get("joinDate"));
@@ -102,7 +103,7 @@ public class UserServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(wordList, responseBody.get("learning_words"));
     }
 
@@ -125,7 +126,7 @@ public class UserServiceTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
+        assertNotNull(responseBody);
         assertEquals(wordList, responseBody.get("learned_words"));
     }
 }
