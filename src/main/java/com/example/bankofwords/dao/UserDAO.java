@@ -37,20 +37,16 @@ public class UserDAO {
         return false;
     }
 
-    public boolean addUser(String username, String password, String email) {
+    public void addUser(String username, String password, String email) {
         String sql = "INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, username);
             statement.setString(2, password);
             statement.setString(3, email);
-            int rowsAffected = statement.executeUpdate();
-            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return false;
     }
 
     public String getPassword(String username) {

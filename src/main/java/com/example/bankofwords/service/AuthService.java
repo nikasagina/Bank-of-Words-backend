@@ -29,20 +29,17 @@ public class AuthService {
 
         if (!errors.isEmpty()) {
             response.put("successful", false);
-            response.put("usernameErrorClass", authValidator.getRegisterErrorClass("username", errors));
-            response.put("passwordErrorClass", authValidator.getRegisterErrorClass("password", errors));
-            response.put("emailErrorClass", authValidator.getRegisterErrorClass("email", errors));
+            response.put("usernameErrorClass", AuthValidator.getRegisterErrorClass("username", errors));
+            response.put("passwordErrorClass", AuthValidator.getRegisterErrorClass("password", errors));
+            response.put("emailErrorClass", AuthValidator.getRegisterErrorClass("email", errors));
+
             return ResponseEntity.ok(response);
         }
 
         String hash = SecurityUtils.hashPassword(password);
-        boolean success = userDAO.addUser(username, hash, email);
-        response.put("successful", success);
+        userDAO.addUser(username, hash, email);
+        response.put("successful", true);
 
-        if (!success) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("successful", false, "error", "Failed to add user."));
-        }
 
         return ResponseEntity.ok(response);
     }
