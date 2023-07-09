@@ -6,8 +6,8 @@ import com.example.bankofwords.utils.SecurityUtils;
 import com.example.bankofwords.utils.AuthValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import java.util.*;
 
 @Service
@@ -23,7 +23,7 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public Map<String, Object> registerUser(String username, String password, String email) {
+    public ResponseEntity<?> registerUser(String username, String password, String email) {
         Map<String, Object> response = new HashMap<>();
         List<String> errors = authValidator.checkRegisterErrors(username, password, email);
 
@@ -32,7 +32,7 @@ public class AuthService {
             response.put("usernameErrorClass", authValidator.getRegisterErrorClass("username", errors));
             response.put("passwordErrorClass", authValidator.getRegisterErrorClass("password", errors));
             response.put("emailErrorClass", authValidator.getRegisterErrorClass("email", errors));
-            return response;
+            return ResponseEntity.ok(response);
         }
 
         String hash = SecurityUtils.hashPassword(password);
@@ -40,35 +40,33 @@ public class AuthService {
         response.put("successful", success);
 
         if (!success) {
-            throw new AuthServiceException("Failed to add user.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("successful", false, "error", "Failed to add user."));
         }
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
-    public Map<String, Object> authenticate(String username, String password) {
+    public ResponseEntity<?> authenticate(String username, String password) {
         if (authValidator.validLogin(username, password)) {
             String jwt = jwtUtil.generateToken(username);
 
-            return Map.of("token", jwt);
+            return ResponseEntity.ok(Map.of("token", jwt));
         } else {
-            throw new AuthServiceException("Invalid login credentials.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid login credentials."));
         }
     }
 
-    public void logout(String authHeader) {
+    public ResponseEntity<?> logout(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             jwtUtil.invalidateToken(token);
+            return ResponseEntity.ok().build();
         } else {
-            throw new AuthServiceException("Invalid token.");
-        }
-    }
-
-    public static class AuthServiceException extends RuntimeException {
-        public AuthServiceException(String message) {
-            super(message);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid Token"));
         }
     }
 }

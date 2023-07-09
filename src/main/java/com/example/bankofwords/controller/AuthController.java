@@ -2,11 +2,8 @@ package com.example.bankofwords.controller;
 
 import com.example.bankofwords.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("api")
@@ -22,35 +19,17 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestParam("username") String username,
                                           @RequestParam("password") String password,
                                           @RequestParam("email") String email) {
-        try {
-            Map<String, Object> response = authService.registerUser(username, password, email);
-            return ResponseEntity.ok(response);
-        } catch (AuthService.AuthServiceException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("successful", false, "error", e.getMessage()));
-        }
+        return authService.registerUser(username, password, email);
     }
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestParam("username") String username,
                                           @RequestParam("password") String password) {
-        try {
-            Map<String, Object> response = authService.authenticate(username, password);
-            return ResponseEntity.ok(response);
-        } catch (AuthService.AuthServiceException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        return authService.authenticate(username, password);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader) {
-        try {
-            authService.logout(authHeader);
-            return ResponseEntity.ok().build();
-        } catch (AuthService.AuthServiceException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        return authService.logout(authHeader);
     }
 }
