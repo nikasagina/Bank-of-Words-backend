@@ -310,15 +310,43 @@ public class WordDAO {
     }
 
     public void deleteWord(long wordId) {
-        String sql = "DELETE FROM words WHERE word_id = ?";
+        String sqlWords = "DELETE FROM words WHERE word_id = ?";
+        String sqlStatistics = "DELETE FROM word_statistics WHERE word_id = ?";
+        String sqlKnownWords = "DELETE FROM known_words WHERE word_id = ?";
+        String sqlImages = "DELETE FROM word_images WHERE word_id = ?";
+        String sqlHistory = "DELETE FROM word_history WHERE word_id = ?";
+
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, wordId);
-            statement.execute();
+             PreparedStatement statementWords = connection.prepareStatement(sqlWords);
+             PreparedStatement statementStatistics = connection.prepareStatement(sqlStatistics);
+             PreparedStatement statementKnownWords = connection.prepareStatement(sqlKnownWords);
+             PreparedStatement statementImages = connection.prepareStatement(sqlImages);
+             PreparedStatement statementHistory = connection.prepareStatement(sqlHistory)) {
+
+            connection.setAutoCommit(false);
+
+            statementWords.setLong(1, wordId);
+            statementWords.executeUpdate();
+
+            statementStatistics.setLong(1, wordId);
+            statementStatistics.executeUpdate();
+
+            statementKnownWords.setLong(1, wordId);
+            statementKnownWords.executeUpdate();
+
+            statementImages.setLong(1, wordId);
+            statementImages.executeUpdate();
+
+            statementHistory.setLong(1, wordId);
+            statementHistory.executeUpdate();
+
+            connection.commit();  // Commit the changes
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
 
     public List<Word> getTableWords(long tableId) {
         String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE t.table_id = ?;";
