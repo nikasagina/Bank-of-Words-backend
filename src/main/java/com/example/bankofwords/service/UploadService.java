@@ -48,7 +48,7 @@ public class UploadService {
             Map<String, Object> response = new HashMap<>();
 
             long userId = userDAO.getUserID(username);
-            if (tableDAO.containsWord(tableId, word)) {
+            if (tableDAO.containsWordAndDefinition(tableId, word, definition)) {
                 response.put("successful", false);
             } else {
                 wordDAO.addWord(tableId, word, definition);

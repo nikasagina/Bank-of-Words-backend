@@ -98,6 +98,22 @@ public class TableDAO {
         return false;
     }
 
+    public boolean containsWordAndDefinition(long tableId, String word, String definition) {
+        String sql = "SELECT word_id FROM words JOIN tables t USING(table_id) WHERE word = ? AND definition = ? AND table_id = ?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, word);
+            statement.setString(2, definition);
+            statement.setLong(3, tableId);
+            ResultSet resultSet = statement.executeQuery();
+            return resultSet.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     public boolean existsTable(long userId, String tableName) {
         String sql = "SELECT * FROM tables WHERE creator_id = ? AND table_name = ?;";
         try (Connection connection = dataSource.getConnection();
