@@ -164,7 +164,7 @@ public class QuestionService {
             FlashcardAnswers.getInstance().remove(flashcard_id);
             long userId = userDAO.getUserID(username);
             long wordId = correctAnswer.getId();
-            boolean isCorrect = correctAnswer.getWord().equals(guess);
+            boolean isCorrect = correctAnswer.getWord().equalsIgnoreCase(guess);
 
             response.put("correct", isCorrect);
             response.put("answer", correctAnswer.getWord());
