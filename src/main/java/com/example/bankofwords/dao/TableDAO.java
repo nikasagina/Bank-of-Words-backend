@@ -14,16 +14,22 @@ public class TableDAO {
         this.dataSource = dataSource;
     }
 
-    public void createTable(long userId, String tableName) {
+    public Table createTable(long userId, String tableName) {
         String sql = "INSERT INTO tables (creator_id, table_name) VALUES (?, ?)";
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setLong(1, userId);
             statement.setString(2, tableName);
-            statement.execute();
+            statement.executeUpdate();
+            ResultSet resultSet = statement.getGeneratedKeys();
+            if (resultSet.next()) {
+                long tableId = resultSet.getLong(1);
+                return new Table(tableId, userId, tableName);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public void deleteTable(long tableId) {

@@ -38,7 +38,7 @@ public class TableService {
             if (tableDAO.existsTable(userId, tableName)) {
                 response.put("success", false);
             } else {
-                tableDAO.createTable(userId, tableName);
+                response.put("table", tableDAO.createTable(userId, tableName));
                 response.put("success", true);
             }
 
