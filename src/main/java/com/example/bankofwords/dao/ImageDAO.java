@@ -19,7 +19,7 @@ public class ImageDAO {
 
     public Image getRandomImage(long user_id) {
         String sql = "SELECT word_id, image_name FROM word_images wi join words w using(word_id) join tables t using(table_id)" +
-                " WHERE (creator_id = ? || creator_id = 0) && " +
+                " WHERE (creator_id = ? || creator_id = 1) && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 ORDER BY RAND() LIMIT 1;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {

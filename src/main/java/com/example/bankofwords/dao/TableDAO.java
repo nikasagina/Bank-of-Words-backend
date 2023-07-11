@@ -60,7 +60,7 @@ public class TableDAO {
     }
 
     public List<Table> getInitialTables() {
-        return getUserTables(0);
+        return getUserTables(1);
     }
 
     public List<Table> getUserTables(long userId) {

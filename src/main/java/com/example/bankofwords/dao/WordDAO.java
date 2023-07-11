@@ -21,7 +21,7 @@ public class WordDAO {
 
 
     public Word getRandomWordFromAll(long user_id) {
-        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id) WHERE (creator_id = ? || creator_id = 0) && definition != '' && " +
+        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id) WHERE (creator_id = ? || creator_id = 1) && definition != '' && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 ORDER BY RAND() LIMIT 1;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -59,7 +59,7 @@ public class WordDAO {
 
     public List<Word> getIncorrectWordsFromAll(Word correct, long user_id) {
         List<Word> result = new ArrayList<>();
-        String sql = "SELECT DISTINCT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id) WHERE creator_id = ? || creator_id = 0 AND word != ? " +
+        String sql = "SELECT DISTINCT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id) WHERE creator_id = ? || creator_id = 1 AND word != ? " +
                 "&& definition != '' && (SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 " +
                 "ORDER BY RAND() LIMIT ?";
         try (Connection connection = dataSource.getConnection();
@@ -205,7 +205,7 @@ public class WordDAO {
     }
 
     public List<Word> getAllLearningWords(long userId) {
-        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 0) && " +
+        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 1) && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 &&" +
                 "(SELECT count(total_count) FROM word_statistics ws WHERE ws.user_id = ? && ws.word_id = w.word_id) > 0;";
         List<Word> result = new ArrayList<>();
@@ -228,7 +228,7 @@ public class WordDAO {
     }
 
     public List<Word> getAllLearnedWords(long userId) {
-        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 0) && " +
+        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 1) && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) != 0;";
         List<Word> result = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
@@ -250,7 +250,7 @@ public class WordDAO {
 
     // Random word that the user has already seen
     public Word getRandomWordWithProgressFromAll(long user_id) {
-        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 0) && definition != '' && " +
+        String sql = "SELECT word_id, word, definition, table_id FROM words w JOIN tables t USING(table_id)  WHERE (creator_id = ? || creator_id = 1) && definition != '' && " +
                 "(SELECT COUNT(*) FROM known_words kw WHERE kw.word_id = w.word_id && user_id = ?) = 0 && " +
                 "(SELECT COUNT(*) FROM word_statistics ws WHERE ws.word_id = w.word_id && user_id = ?) != 0 " +
                 "ORDER BY RAND() LIMIT 1;";

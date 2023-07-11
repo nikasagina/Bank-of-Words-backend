@@ -68,7 +68,7 @@ public class TableService {
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
 
-            response.put("tables", tableDAO.getInitialTables());
+            response.put("tables", userDAO.getUserID(jwtUtil.getUsernameFromToken(token)) != 1L ? tableDAO.getInitialTables() : "");
 
             return ResponseEntity.ok(response);
         } else {

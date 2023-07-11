@@ -84,16 +84,17 @@ public class UploadServiceTest {
         String authHeader = "Bearer someToken";
         String username = "testUser";
         String word = "testWord";
+        String definition = "definition";
         long userId = 1L;
         long tableId = 1L;
 
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
         when(userDAO.getUserID(username)).thenReturn(userId);
-        when(tableDAO.containsWord(tableId, word)).thenReturn(true);
+        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(true);
 
         // Act
-        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, "definition", null);
+        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, definition, null);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -108,16 +109,17 @@ public class UploadServiceTest {
         String authHeader = "Bearer someToken";
         String username = "testUser";
         String word = "testWord";
+        String definition = "definition";
         long userId = 1L;
         long tableId = 1L;
 
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
         when(userDAO.getUserID(username)).thenReturn(userId);
-        when(tableDAO.containsWord(tableId, word)).thenReturn(false);
+        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(false);
 
         // Act
-        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, "definition", null);
+        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, definition, null);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -132,6 +134,7 @@ public class UploadServiceTest {
         String authHeader = "Bearer someToken";
         String username = "testUser";
         String word = "testWord";
+        String definition = "definition";
         long userId = 1L;
         long tableId = 1L;
 
@@ -146,14 +149,14 @@ public class UploadServiceTest {
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
         when(userDAO.getUserID(username)).thenReturn(userId);
-        when(tableDAO.containsWord(tableId, word)).thenReturn(false);
+        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(false);
 
         // Mock the Files class and its write method
         try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
             mockedFiles.when(() -> Files.write(Mockito.any(), Mockito.any(byte[].class))).thenReturn(null);
 
             // Act
-            ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, "definition", image);
+            ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, definition, image);
 
             // Assert
             assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -169,6 +172,7 @@ public class UploadServiceTest {
         String authHeader = "Bearer someToken";
         String username = "testUser";
         String word = "testWord";
+        String definition = "definition";
         long userId = 1L;
         long tableId = 1L;
         MultipartFile image = Mockito.mock(MultipartFile.class);
@@ -176,11 +180,11 @@ public class UploadServiceTest {
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
         when(userDAO.getUserID(username)).thenReturn(userId);
-        when(tableDAO.containsWord(tableId, word)).thenReturn(false);
+        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(false);
         when(image.getBytes()).thenThrow(IOException.class); // Throw IOException when attempting to read the bytes
 
         // Act
-        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, "definition", image);
+        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, definition, image);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());

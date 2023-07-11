@@ -44,6 +44,7 @@ public class UserDAO {
             statement.setString(1, username);
             statement.setString(2, password);
             statement.setString(3, email);
+            statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
