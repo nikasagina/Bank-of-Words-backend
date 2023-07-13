@@ -33,11 +33,17 @@ public class TableDAO {
     }
 
     public void deleteTable(long tableId) {
+        String deleteImageSQL = "DELETE FROM word_images WHERE word_id IN (SELECT word_id FROM words WHERE table_id = ?)";
         String deleteWordsSQL = "DELETE FROM words WHERE table_id = ?";
         String deleteTableSQL = "DELETE FROM tables WHERE table_id = ?";
         try (Connection connection = dataSource.getConnection();
+             PreparedStatement deleteImageStatement = connection.prepareStatement(deleteImageSQL);
              PreparedStatement deleteWordsStatement = connection.prepareStatement(deleteWordsSQL);
              PreparedStatement deleteTableStatement = connection.prepareStatement(deleteTableSQL)) {
+
+            deleteImageStatement.setLong(1, tableId);
+            deleteImageStatement.execute();
+
             deleteWordsStatement.setLong(1, tableId);
             deleteWordsStatement.execute();
 
