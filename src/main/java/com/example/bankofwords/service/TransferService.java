@@ -7,15 +7,11 @@ import com.example.bankofwords.utils.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.apache.commons.io.FileUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,7 +34,7 @@ public class TransferService {
     private final TableDAO tableDAO;
 
     @Autowired
-    public TransferService(WordDAO wordDAO, UserDAO userDAO, StatisticsDAO statisticsDAO, ImageDAO imageDAO,
+    public TransferService(WordDAO wordDAO, UserDAO userDAO, ImageDAO imageDAO,
                            JwtUtil jwtUtil, TableDAO tableDAO) {
         this.wordDAO = wordDAO;
         this.userDAO = userDAO;
@@ -84,7 +80,7 @@ public class TransferService {
                     imageDAO.addImage(wordId, imageUrl);
             }
 
-            response.put("message", "Table imported successfully.");
+            response.put("table", table);
 
             return ResponseEntity.ok(response);
         } else {

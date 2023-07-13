@@ -129,8 +129,7 @@ public class TransferServiceTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody() instanceof Map);
         Map<?, ?> responseBody = (Map<?, ?>) response.getBody();
-        assertTrue(responseBody.containsKey("message"));
-        assertEquals("Table imported successfully.", responseBody.get("message"));
+        assertTrue(responseBody.containsKey("table"));
     }
 
     @Test
