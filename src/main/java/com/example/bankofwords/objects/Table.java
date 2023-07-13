@@ -1,5 +1,7 @@
 package com.example.bankofwords.objects;
 
+import java.util.Objects;
+
 public class Table {
     private final long tableId;
     private final long creatorId;
@@ -9,6 +11,19 @@ public class Table {
         this.tableId = tableId;
         this.creatorId = creatorId;
         this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Table table = (Table) o;
+        return Objects.equals(name, table.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tableId, creatorId, name);
     }
 
     public long getTableId() {
