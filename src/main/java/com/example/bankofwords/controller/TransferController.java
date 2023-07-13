@@ -26,9 +26,9 @@ public class TransferController {
         return transferService.importTable(authHeader, json);
     }
 
-    @GetMapping("/export/{tableName}")
+    @GetMapping("/export/{tableId}")
     public ResponseEntity<?> exportTable(@RequestHeader("Authorization") String authHeader,
-                                         @PathVariable("tableName") String tableName) throws IOException {
-        return transferService.exportTable(authHeader, tableName);
+                                         @PathVariable("tableId") long tableId) throws IOException {
+        return transferService.exportTable(authHeader, tableId);
     }
 }

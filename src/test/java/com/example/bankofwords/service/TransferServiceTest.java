@@ -61,7 +61,7 @@ public class TransferServiceTest {
 
         // Act
         ResponseEntity<?> response1 = transferService.importTable(authHeader, null);
-        ResponseEntity<?> response2 = transferService.exportTable(authHeader, null);
+        ResponseEntity<?> response2 = transferService.exportTable(authHeader, 1L);
 
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response1.getStatusCode());
@@ -138,17 +138,16 @@ public class TransferServiceTest {
         // Arrange
         String authHeader = "Bearer someToken";
         String username = "testUser";
-        String tableName = "existingTableName";
+        String tableName = "testTable";
+        long tableId = 1L;
 
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(1L);
-        when(tableDAO.getTableId(1L, tableName)).thenReturn(1L);
         when(tableDAO.getTable(1L)).thenReturn(new Table(1L, 1L, tableName));
         when(wordDAO.getTableWords(1L)).thenReturn(List.of(new Word(1L, "bar", "foo", 1L)));
         when(imageDAO.getImageUrl(1L)).thenReturn("");
         // Act
-        ResponseEntity<Resource> response = transferService.exportTable(authHeader, tableName);
+        ResponseEntity<Resource> response = transferService.exportTable(authHeader, tableId);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());

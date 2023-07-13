@@ -92,14 +92,12 @@ public class TransferService {
         }
     }
 
-    public ResponseEntity<Resource> exportTable(String authHeader, String tableName) throws IOException {
+    public ResponseEntity<Resource> exportTable(String authHeader, long tableId) throws IOException {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             Map<String, Object> response = new HashMap<>();
 
-            long userId = userDAO.getUserID(username);
-            long tableId = tableDAO.getTableId(userId, tableName);
             Table table = tableDAO.getTable(tableId);
             List<Word> wordList = wordDAO.getTableWords(tableId);
             List<Map<String, String>> words = wordList.stream()
