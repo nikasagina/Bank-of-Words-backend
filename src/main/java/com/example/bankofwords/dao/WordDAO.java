@@ -131,27 +131,18 @@ public class WordDAO {
         return null;
     }
 
-    public Long getWordId(String word, long user_id) {
-        Long wordId = getWordIdWithCreator(word, user_id);
-
-        if (wordId != null) {
-            return wordId;
-        }
-        return getWordIdWithCreator(word, 0);
-    }
-
-    private Long getWordIdWithCreator(String word, long user_id) {
-        String sql = "SELECT word_id FROM words JOIN tables t USING(table_id) WHERE creator_id = ? && word = ?";
+    public Long getWordId(String word, String definition, long user_id) {
+        String sql = "SELECT word_id FROM words JOIN tables t USING(table_id) WHERE creator_id = ? && word = ? && definition = ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, user_id);
             statement.setString(2, word);
+            statement.setString(3, definition);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next())
                     return resultSet.getLong(1);
             }
         } catch (SQLException e) {
-            // Handle any exceptions
             e.printStackTrace();
         }
 
