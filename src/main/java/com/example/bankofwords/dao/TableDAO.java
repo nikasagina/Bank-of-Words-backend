@@ -134,4 +134,20 @@ public class TableDAO {
 
         return false;
     }
+
+    public Table getTable(long tableId) {
+        String sql = "SELECT * FROM tables WHERE table_id = ?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, tableId);
+            ResultSet resultSet = statement.executeQuery();
+            if(resultSet.next())
+                return new Table(resultSet.getLong("table_id"), resultSet.getLong("creator_id"),
+                        resultSet.getString("table_name"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
