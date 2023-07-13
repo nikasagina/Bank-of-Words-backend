@@ -25,12 +25,12 @@ public class UploadController {
         return uploadService.uploadWord(authHeader, tableId, word, definition, image);
     }
 
-    @PostMapping("/{word}/image")
+    @PostMapping("/{wordId}/image")
     public ResponseEntity<?> addImageToWord(@RequestHeader("Authorization") String authHeader,
                                             @RequestParam("tableId") Long tableId,
-                                            @PathVariable("word") String word,
+                                            @PathVariable("wordId") Long wordId,
                                             @RequestParam("image") MultipartFile image) {
-        return uploadService.addImageToWord(authHeader, tableId, word, image);
+        return uploadService.addImageToWord(authHeader, tableId, wordId, image);
     }
 
 

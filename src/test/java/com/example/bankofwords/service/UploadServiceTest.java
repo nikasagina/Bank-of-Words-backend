@@ -69,7 +69,7 @@ public class UploadServiceTest {
 
         // Act
         ResponseEntity<?> response1 = uploadService.uploadWord(authHeader, 0L, "", "", null);
-        ResponseEntity<?> response2 = uploadService.addImageToWord(authHeader, 0L, "", null);
+        ResponseEntity<?> response2 = uploadService.addImageToWord(authHeader, 0L, 0L, null);
         ResponseEntity<?> response3 = uploadService.uploadBook(authHeader, 0L, null);
 
         // Assert
@@ -197,6 +197,7 @@ public class UploadServiceTest {
         String authHeader = "Bearer someToken";
         String username = "testUser";
         String word = "testWord";
+        String definition = "definition";
         long userId = 1L;
         long tableId = 1L;
         long wordId = 1L;
@@ -212,7 +213,6 @@ public class UploadServiceTest {
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
         when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getWordId(word, userId)).thenReturn(wordId);
         when(wordDAO.getWordCreator(wordId)).thenReturn(userId);
 
         // Mock the Files class and its write method
@@ -220,7 +220,7 @@ public class UploadServiceTest {
             mockedFiles.when(() -> Files.write(Mockito.any(), Mockito.any(byte[].class))).thenReturn(null);
 
             // Act
-            ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, word, image);
+            ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, wordId, image);
 
             // Assert
             assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -233,6 +233,8 @@ public class UploadServiceTest {
         String authHeader = "Bearer someToken";
         String username = "testUser";
         String word = "testWord";
+        String definition = "definition";
+        long wordId = 1L;
         long userId = 1L;
         long tableId = 1L;
 
@@ -247,10 +249,9 @@ public class UploadServiceTest {
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
         when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getWordId(word, userId)).thenReturn(null);
 
         // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, word, image);
+        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, wordId, image);
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -262,6 +263,7 @@ public class UploadServiceTest {
         String authHeader = "Bearer someToken";
         String username = "testUser";
         String word = "testWord";
+        String definition = "definition";
         long userId = 1L;
         long tableId = 1L;
         long wordId = 1L;
@@ -277,11 +279,10 @@ public class UploadServiceTest {
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
         when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getWordId(word, userId)).thenReturn(wordId);
         when(wordDAO.getWordCreator(wordId)).thenReturn(0L);
 
         // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, word, image);
+        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, wordId, image);
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -293,14 +294,12 @@ public class UploadServiceTest {
         // Arrange
         String authHeader = "Bearer someToken";
         String username = "testUser";
-        String word = "testWord";
-
 
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
 
         // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, 1L, word,  null);
+        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, 1L, 1L,  null);
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -312,6 +311,7 @@ public class UploadServiceTest {
         String authHeader = "Bearer someToken";
         String username = "testUser";
         String word = "testWord";
+        String definition = "definition";
         long wordId = 1L;
         long userId = 1L;
         long tableId = 1L;
@@ -320,12 +320,11 @@ public class UploadServiceTest {
         when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
         when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
         when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getWordId(word, userId)).thenReturn(wordId);
         when(wordDAO.getWordCreator(wordId)).thenReturn(userId);
         when(image.getBytes()).thenThrow(IOException.class); // Throw IOException when attempting to read the bytes
 
         // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, word, image);
+        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, wordId, image);
 
         // Assert
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
