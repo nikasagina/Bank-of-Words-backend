@@ -64,4 +64,20 @@ public class ImageDAO {
 
         return null;
     }
+
+    public String getImageUrl(long id) {
+        String sql = "SELECT image_name FROM word_images WHERE word_id = ?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next())
+                    return resultSet.getString("image_name");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
 }
