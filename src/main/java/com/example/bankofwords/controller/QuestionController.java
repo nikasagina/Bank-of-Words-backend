@@ -1,5 +1,6 @@
 package com.example.bankofwords.controller;
 
+import com.example.bankofwords.annotation.Secure;
 import com.example.bankofwords.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/question")
+@Secure
 public class QuestionController {
 
     private final QuestionService questionService;
@@ -17,27 +19,23 @@ public class QuestionController {
     }
 
     @GetMapping("/default/{tableId}")
-    public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader,
-                                   @PathVariable(value = "tableId", required = false) Long tableId) {
-        return questionService.start(authHeader, tableId);
+    public ResponseEntity<?> start(@PathVariable(value = "tableId") Long tableId) {
+        return questionService.start(tableId);
     }
 
     @GetMapping("/spelling/{tableId}")
-    public ResponseEntity<?> spelling(@RequestHeader("Authorization") String authHeader,
-                                      @PathVariable(value = "tableId", required = false) Long tableId) {
-        return questionService.spelling(authHeader, tableId);
+    public ResponseEntity<?> spelling(@PathVariable(value = "tableId") Long tableId) {
+        return questionService.spelling(tableId);
     }
 
     @GetMapping("/image/{tableId}")
-    public ResponseEntity<?> image(@RequestHeader("Authorization") String authHeader,
-                                   @PathVariable(value = "tableId", required = false) Long tableId) {
-        return questionService.image(authHeader, tableId);
+    public ResponseEntity<?> image(@PathVariable(value = "tableId") Long tableId) {
+        return questionService.image(tableId);
     }
 
     @PostMapping("/answer")
-    public ResponseEntity<?> answer(@RequestHeader("Authorization") String authHeader,
-                                    @RequestParam("guess") String guess,
+    public ResponseEntity<?> answer(@RequestParam("guess") String guess,
                                     @RequestParam("id") long flashcard_id) {
-        return questionService.answer(authHeader, guess, flashcard_id);
+        return questionService.answer(guess, flashcard_id);
     }
 }
