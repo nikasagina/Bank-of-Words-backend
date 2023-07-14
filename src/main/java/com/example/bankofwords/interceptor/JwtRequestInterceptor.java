@@ -15,7 +15,6 @@ import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.naming.AuthenticationException;
 
 @Component
 @Secure(value = false)
@@ -41,13 +40,9 @@ public class JwtRequestInterceptor implements HandlerInterceptor {
                              @NotNull HttpServletResponse response,
                              @NotNull Object handler) throws Exception {
         Secure controllerClass = getAnnotation(request);
-        System.out.println("bua");
-        System.out.println(controllerClass == null);
         if (controllerClass == null){
             return false;
         }
-
-        System.out.println("geeg");
 
         if (controllerClass.value()){
             // check if request is authorized:
@@ -62,6 +57,7 @@ public class JwtRequestInterceptor implements HandlerInterceptor {
                 }
             }
         } else {
+            // if the request does not need authorization
             return true;
         }
 

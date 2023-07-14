@@ -1,5 +1,6 @@
 package com.example.bankofwords.controller;
 
+import com.example.bankofwords.annotation.Secure;
 import com.example.bankofwords.service.TransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("api/transfer")
+@Secure
 public class TransferController {
     private final TransferService transferService;
 
@@ -19,15 +21,13 @@ public class TransferController {
     }
 
     @PostMapping("/import")
-    public ResponseEntity<?> importTable(@RequestHeader("Authorization") String authHeader,
-                                         @RequestParam("file") MultipartFile file) throws IOException {
-        return transferService.importTable(authHeader, file);
+    public ResponseEntity<?> importTable(@RequestParam("file") MultipartFile file) throws IOException {
+        return transferService.importTable(file);
 
     }
 
     @GetMapping("/export/{tableId}")
-    public ResponseEntity<?> exportTable(@RequestHeader("Authorization") String authHeader,
-                                         @PathVariable("tableId") long tableId) throws IOException {
-        return transferService.exportTable(authHeader, tableId);
+    public ResponseEntity<?> exportTable(@PathVariable("tableId") long tableId) throws IOException {
+        return transferService.exportTable(tableId);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.bankofwords.controller;
 
+import com.example.bankofwords.annotation.Secure;
 import com.example.bankofwords.service.FlashcardService;
 import com.example.bankofwords.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/flashcard")
+@Secure
 public class FlashcardController {
 
     private final FlashcardService flashcardService;
@@ -18,21 +20,18 @@ public class FlashcardController {
     }
 
     @GetMapping("/front/text/{tableId}")
-    public ResponseEntity<?> getTextFront(@RequestHeader("Authorization") String authHeader,
-                                   @PathVariable(value = "tableId") long tableId) {
-        return flashcardService.getTextFront(authHeader, tableId);
+    public ResponseEntity<?> getTextFront(@PathVariable(value = "tableId") long tableId) {
+        return flashcardService.getTextFront(tableId);
     }
 
 
     @GetMapping("/front/image/{tableId}")
-    public ResponseEntity<?> getImageFront(@RequestHeader("Authorization") String authHeader,
-                                           @PathVariable(value = "tableId") long tableId) {
-        return flashcardService.getImageFront(authHeader, tableId);
+    public ResponseEntity<?> getImageFront(@PathVariable(value = "tableId") long tableId) {
+        return flashcardService.getImageFront(tableId);
     }
 
     @GetMapping("/back/{flashcardId}")
-    public ResponseEntity<?> getImageBack(@RequestHeader("Authorization") String authHeader,
-                                          @PathVariable(value = "flashcardId") long flashcardId) {
-        return flashcardService.getFlashcardBack(authHeader, flashcardId);
+    public ResponseEntity<?> getImageBack(@PathVariable(value = "flashcardId") long flashcardId) {
+        return flashcardService.getFlashcardBack(flashcardId);
     }
 }

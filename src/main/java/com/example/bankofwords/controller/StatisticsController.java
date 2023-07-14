@@ -1,5 +1,6 @@
 package com.example.bankofwords.controller;
 
+import com.example.bankofwords.annotation.Secure;
 import com.example.bankofwords.service.StatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("api/stats")
+@Secure
 public class StatisticsController {
     private final StatisticsService statisticsService;
 
@@ -19,17 +21,17 @@ public class StatisticsController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<?> getUserStatistics(@RequestHeader("Authorization") String authHeader) {
-        return statisticsService.getUserStatistics(authHeader);
+    public ResponseEntity<?> getUserStatistics() {
+        return statisticsService.getUserStatistics();
     }
 
     @GetMapping("/global")
-    public ResponseEntity<?> getGlobalStatistics(@RequestHeader("Authorization") String authHeader) {
-        return statisticsService.getGlobalStatistics(authHeader);
+    public ResponseEntity<?> getGlobalStatistics() {
+        return statisticsService.getGlobalStatistics();
     }
 
     @GetMapping("/user/activity")
-    public ResponseEntity<?> getUserActivity(@RequestHeader("Authorization") String authHeader) {
-        return statisticsService.getUserActivity(authHeader);
+    public ResponseEntity<?> getUserActivity() {
+        return statisticsService.getUserActivity();
     }
 }

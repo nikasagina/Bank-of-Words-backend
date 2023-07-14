@@ -1,5 +1,6 @@
 package com.example.bankofwords.controller;
 
+import com.example.bankofwords.annotation.Secure;
 import com.example.bankofwords.service.TableService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/table")
+@Secure
 public class TableController {
     private final TableService tableService;
 
@@ -16,32 +18,29 @@ public class TableController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestHeader("Authorization") String authHeader,
-                                    @RequestParam("tableName") String tableName) {
-        return tableService.create(authHeader, tableName);
+    public ResponseEntity<?> create(@RequestParam("tableName") String tableName) {
+        return tableService.create(tableName);
     }
 
     @DeleteMapping("/delete/{tableId}")
-    public ResponseEntity<?> delete(@RequestHeader("Authorization") String authHeader,
-                                    @PathVariable("tableId") long tableId) {
-        return tableService.delete(authHeader, tableId);
+    public ResponseEntity<?> delete(@PathVariable("tableId") long tableId) {
+        return tableService.delete(tableId);
     }
 
     @GetMapping("/initial")
-    public ResponseEntity<?> initialTables(@RequestHeader("Authorization") String authHeader) {
-        return tableService.initialTables(authHeader);
+    public ResponseEntity<?> initialTables() {
+        return tableService.initialTables();
     }
 
 
     @GetMapping("/user")
-    public ResponseEntity<?> userTables(@RequestHeader("Authorization") String authHeader) {
-        return tableService.userTables(authHeader);
+    public ResponseEntity<?> userTables() {
+        return tableService.userTables();
     }
 
 
     @GetMapping("/words/{tableId}")
-    public ResponseEntity<?> words(@RequestHeader("Authorization") String authHeader,
-                                   @PathVariable("tableId") long tableId) {
-        return tableService.getWords(authHeader, tableId);
+    public ResponseEntity<?> words(@PathVariable("tableId") long tableId) {
+        return tableService.getWords(tableId);
     }
 }
