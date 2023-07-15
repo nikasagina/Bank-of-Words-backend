@@ -14,9 +14,11 @@ public class AuthValidator {
     private static final String EMAIL_ERROR_MESSAGE = "Already registered with this Email";
 
     private final UserDAO dao;
+    private final SecurityUtils securityUtils;
 
-    public AuthValidator(UserDAO dao) {
+    public AuthValidator(UserDAO dao, SecurityUtils securityUtils) {
         this.dao = dao;
+        this.securityUtils = securityUtils;
     }
 
     private boolean isUsernameAvailable(String username) {
@@ -36,7 +38,7 @@ public class AuthValidator {
             return false;
         }
 
-        return Objects.equals(dao.getPassword(username), SecurityUtils.hashPassword(password));
+        return Objects.equals(dao.getPassword(username), securityUtils.hashPassword(password));
     }
 
     public List<String> checkRegisterErrors(String username, String password, String email) {

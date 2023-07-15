@@ -13,12 +13,14 @@ public class AuthService {
     private final UserDAO userDAO;
     private final AuthValidator authValidator;
     private final JwtUtil jwtUtil;
+    private final SecurityUtils securityUtils;
 
     @Autowired
-    public AuthService(UserDAO userDAO, AuthValidator authValidator, JwtUtil jwtUtil) {
+    public AuthService(UserDAO userDAO, AuthValidator authValidator, JwtUtil jwtUtil, SecurityUtils securityUtils) {
         this.userDAO = userDAO;
         this.authValidator = authValidator;
         this.jwtUtil = jwtUtil;
+        this.securityUtils = securityUtils;
     }
 
     public Map<String, Object> registerUser(String username, String password, String email) {
@@ -33,7 +35,7 @@ public class AuthService {
             return response;
         }
 
-        String hash = SecurityUtils.hashPassword(password);
+        String hash = securityUtils.hashPassword(password);
         userDAO.addUser(username, hash, email);
 
         response.put("successful", true);
