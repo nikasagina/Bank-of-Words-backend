@@ -29,45 +29,32 @@ public class WordService {
         this.lexiconDAO = lexiconDAO;
     }
 
-    public ResponseEntity<?> learn(long wordId) {
+    public boolean learn(long wordId) {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
 
-        if (wordDAO.alreadyKnows(userId, wordId)) {
-            response.put("success", false);
-        } else {
-            wordDAO.learnWord(userId, wordId);
-            response.put("success", true);
-        }
+        if (wordDAO.alreadyKnows(userId, wordId))
+            return false;
 
-        return ResponseEntity.ok(response);
+        wordDAO.learnWord(userId, wordId);
+        return true;
     }
 
-    public ResponseEntity<?> delete(long wordId) {
+    public void delete(long wordId) {
         wordDAO.deleteWord(wordId);
-        return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<?> getDefinitions(String word) {
-
-        Map<String, Object> response = new HashMap<>();
-
-        List<String> definitions = lexiconDAO.getDefinitions(word);
-
-        response.put("available_definitions", definitions);
-
-        return ResponseEntity.ok(response);
+    public List<String> getDefinitions(String word) {
+        return lexiconDAO.getDefinitions(word);
     }
 
-    public ResponseEntity<?> getWordInfo(String word) {
+    public Map<String, Object> getWordInfo(String word) {
         Map<String, Object> response = new HashMap<>();
 
         String definition = lexiconDAO.getWordDefinition(word);
 
         if (Objects.equals(definition, "")) {
-            return ResponseEntity.noContent().build();
+            return null;
         }
-
 
         List<String> otherDefinitions = lexiconDAO.getDefinitions(word);
         otherDefinitions.remove(0); // guaranteed that list's size is at least 1
@@ -79,6 +66,6 @@ public class WordService {
         response.put("synonyms", lexiconDAO.getWordSynonyms(word));
         response.put("antonyms", lexiconDAO.getWordAntonyms(word));
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 }

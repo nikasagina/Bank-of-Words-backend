@@ -3,8 +3,11 @@ package com.example.bankofwords.controller;
 import com.example.bankofwords.annotation.Secure;
 import com.example.bankofwords.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("api")
@@ -21,17 +24,33 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestParam("username") String username,
                                           @RequestParam("password") String password,
                                           @RequestParam("email") String email) {
-        return authService.registerUser(username, password, email);
+        try {
+            return ResponseEntity.ok(authService.registerUser(username, password, email));
+        } catch (AuthService.AuthServiceException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("successful", false, "error", e.getMessage()));
+        }
     }
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestParam("username") String username,
                                           @RequestParam("password") String password) {
-        return authService.authenticate(username, password);
+        try {
+            return ResponseEntity.ok(authService.authenticate(username, password));
+        } catch (AuthService.AuthServiceException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> start(@RequestHeader("Authorization") String authHeader) {
-        return authService.logout(authHeader);
+        try {
+            authService.logout(authHeader);
+            return ResponseEntity.ok().build();
+        } catch (AuthService.AuthServiceException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }

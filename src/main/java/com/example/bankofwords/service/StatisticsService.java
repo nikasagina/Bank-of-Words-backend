@@ -33,7 +33,7 @@ public class StatisticsService {
         this.wordHistoryDAO = wordHistoryDAO;
     }
 
-    public ResponseEntity<?> getUserStatistics() {
+    public Map<String, Object> getUserStatistics() {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         Map<String, Object> response = new HashMap<>();
 
@@ -66,10 +66,10 @@ public class StatisticsService {
             response.put("least_guessed_word", null);
         }
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 
-    public ResponseEntity<?> getGlobalStatistics() {
+    public Map<String, Object> getGlobalStatistics() {
         Map<String, Object> response = new HashMap<>();
 
         long mostGuessedWordId = statisticsDAO.getMostGuessedWordOverall();
@@ -109,15 +109,12 @@ public class StatisticsService {
         }
         response.put("top_5", topUsernames);
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 
-    public ResponseEntity<?> getUserActivity() {
+    public Map<String, Object> getUserActivity() {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
 
-        response.put("activity", wordHistoryDAO.getFullDailyActivity(userId));
-
-        return ResponseEntity.ok(response);
+        return Map.of("activity", wordHistoryDAO.getFullDailyActivity(userId));
     }
 }

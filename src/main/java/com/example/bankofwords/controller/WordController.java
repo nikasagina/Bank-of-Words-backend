@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("api/word")
 @Secure
@@ -19,21 +22,27 @@ public class WordController {
 
     @PostMapping("/learn/{wordId}")
     public ResponseEntity<?> learn(@PathVariable("wordId") long wordId) {
-        return wordService.learn(wordId);
+        return ResponseEntity.ok(Map.of("success", wordService.learn(wordId)));
     }
 
     @DeleteMapping("/delete/{wordId}")
-    public ResponseEntity<?> delete(@PathVariable("wordId") long wordId) {
-        return wordService.delete(wordId);
+    public void delete(@PathVariable("wordId") long wordId) {
+        wordService.delete(wordId);
     }
 
     @GetMapping("/definitions/{word}")
     public ResponseEntity<?> getDefinitions(@PathVariable("word") String word) {
-        return wordService.getDefinitions(word);
+        return ResponseEntity.ok(Map.of("available_definitions", wordService.getDefinitions(word)));
     }
 
     @GetMapping("/info/{word}")
     public ResponseEntity<?> getWordInfo(@PathVariable("word") String word) {
-        return wordService.getWordInfo(word);
+        Map<String, Object> response = wordService.getWordInfo(word);
+
+        if (response == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(response);
     }
 }

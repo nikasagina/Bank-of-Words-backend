@@ -2,10 +2,11 @@ package com.example.bankofwords.controller;
 
 import com.example.bankofwords.annotation.Secure;
 import com.example.bankofwords.service.FlashcardService;
-import com.example.bankofwords.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/flashcard")
@@ -21,17 +22,19 @@ public class FlashcardController {
 
     @GetMapping("/front/text/{tableId}")
     public ResponseEntity<?> getTextFront(@PathVariable(value = "tableId") long tableId) {
-        return flashcardService.getTextFront(tableId);
+        return ResponseEntity.ok(flashcardService.getTextFront(tableId));
     }
 
 
     @GetMapping("/front/image/{tableId}")
     public ResponseEntity<?> getImageFront(@PathVariable(value = "tableId") long tableId) {
-        return flashcardService.getImageFront(tableId);
+        return ResponseEntity.ok(flashcardService.getImageFront(tableId));
     }
 
     @GetMapping("/back/{flashcardId}")
-    public ResponseEntity<?> getImageBack(@PathVariable(value = "flashcardId") long flashcardId) {
-        return flashcardService.getFlashcardBack(flashcardId);
+    public ResponseEntity<?> getFlashcardBack(@PathVariable(value = "flashcardId") long flashcardId) {
+        String answer = flashcardService.getFlashcardBack(flashcardId);
+
+        return answer == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(Map.of("back", answer));
     }
 }

@@ -27,32 +27,21 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public ResponseEntity<?> getInfo() {
+    public User getInfo() {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
 
-        User user = userDAO.getUserById(userId);
-        response.put("username", user.getUsername());
-        response.put("email", user.getEmail());
-        response.put("joinDate", user.getFormattedJoinDate());
-        return ResponseEntity.ok(response);
+        return userDAO.getUserById(userId);
     }
 
-    public ResponseEntity<?> getAllLearningWords() {
+    public List<Word>  getAllLearningWords() {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
 
-        List<Word> words = wordDAO.getAllLearningWords(userId);
-        response.put("learning_words", words);
-        return ResponseEntity.ok(response);
+        return wordDAO.getAllLearningWords(userId);
     }
 
-    public ResponseEntity<?> getAllLearnedWords() {
+    public List<Word> getAllLearnedWords() {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
 
-        List<Word> words = wordDAO.getAllLearnedWords(userId);
-        response.put("learned_words", words);
-        return ResponseEntity.ok(response);
+        return wordDAO.getAllLearnedWords(userId);
     }
 }

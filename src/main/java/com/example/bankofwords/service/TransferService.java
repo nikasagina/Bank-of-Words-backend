@@ -40,7 +40,7 @@ public class TransferService {
     }
 
 
-    public ResponseEntity<?> importTable(MultipartFile file) throws IOException {
+    public Map<String, Object> importTable(MultipartFile file) throws IOException {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
 
         Gson gson = new Gson();
@@ -48,13 +48,12 @@ public class TransferService {
         Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8);
         Map<String, Object> json = gson.fromJson(reader, type);
 
-        Map<String, Object> response = new HashMap<>();
         String tableName = (String) json.get("tableName");
         Table mockTable = new Table(0, 0, tableName);
 
         if (tableDAO.getUserTables(userId).contains(mockTable) || tableDAO.getInitialTables().contains(mockTable)){
-            response.put("error", "You already have a table with the same name as the imported table");
-            return ResponseEntity.ok(response);
+
+            return Map.of("error", "You already have a table with the same name as the imported table");
         }
 
         Table table = tableDAO.createTable(userId, tableName);
@@ -73,12 +72,10 @@ public class TransferService {
                 imageDAO.addImage(wordId, imageUrl);
         }
 
-        response.put("table", table);
-
-        return ResponseEntity.ok(response);
+        return Map.of("table", table);
     }
 
-    public ResponseEntity<Resource> exportTable(long tableId) throws IOException {
+    public String exportTable(long tableId) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
         Table table = tableDAO.getTable(tableId);
@@ -93,24 +90,6 @@ public class TransferService {
 
         // Convert the response to JSON
         ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(response);
-
-        // Write the JSON data to a file
-        File file = new File(table.getName() + ".json");
-        FileUtils.writeStringToFile(file, json, Charset.defaultCharset());
-
-        // Create a Resource object from the file
-        Resource resource = new FileSystemResource(file);
-
-        // Set the content type and attachment header
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setContentDisposition(ContentDisposition.attachment().filename(file.getName()).build());
-
-        // Return the file as a downloadable resource
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(file.length())
-                .body(resource);
+        return mapper.writeValueAsString(response);
     }
 }

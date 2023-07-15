@@ -39,58 +39,31 @@ public class UploadService {
     }
 
 
-    public ResponseEntity<?> uploadWord(long tableId, String word, String definition, MultipartFile image) {
+    public boolean uploadWord(long tableId, String word, String definition, MultipartFile image) {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
 
-        if (tableDAO.containsWordAndDefinition(tableId, word, definition)) {
-            response.put("successful", false);
-        } else {
-            wordDAO.addWord(tableId, word, definition);
-            response.put("successful", true);
+        if (tableDAO.containsWordAndDefinition(tableId, word, definition))
+            return false;
 
-            long wordId = wordDAO.getWordId(word, definition, userId);
-            if (image != null && !image.isEmpty()) {
-                String imageName = word + "_" + UUID.randomUUID() + ".jpg";
-                Path imagePath = Paths.get("src/main/resources/static/images/" + imageName);
+        wordDAO.addWord(tableId, word, definition);
 
-                try {
-                    Files.write(imagePath, image.getBytes());
-                    imageDAO.addImage(wordId, imageName);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return ResponseEntity.ok(response);
-    }
-
-    public ResponseEntity<?> addImageToWord(long tableId, long wordId, MultipartFile image) {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        long wordId = wordDAO.getWordId(word, definition, userId);
         if (image != null && !image.isEmpty()) {
-            // if the user want to add picture to the initial word, copy the initial word to the users words
-            if (wordDAO.getWordCreator(wordId) == 0) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Can not add an image to an initial word");
-            }
-
-            String imageName = userId + "-" + UUID.randomUUID() + ".jpg";
+            String imageName = word + "_" + UUID.randomUUID() + ".jpg";
             Path imagePath = Paths.get("src/main/resources/static/images/" + imageName);
+
             try {
                 Files.write(imagePath, image.getBytes());
                 imageDAO.addImage(wordId, imageName);
             } catch (IOException e) {
                 e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save the image.");
             }
-
-            return ResponseEntity.ok("Image added successfully.");
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No image provided.");
         }
+
+        return true;
     }
 
-    public ResponseEntity<?> uploadBook(long tableId, MultipartFile file) {
+    public Map<String, Object> uploadBook(long tableId, MultipartFile file) {
         try {
             String fileExtension = getFileExtension(Objects.requireNonNull(file.getOriginalFilename()));
             List<String> unknownWords;
@@ -98,8 +71,7 @@ public class UploadService {
             if (fileExtension.equals("pdf")) {
                 unknownWords = pdfParser.parsePdf(file);
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Unsupported file format.");
+                return Map.of("error", "Unsupported file format.");
             }
 
             Map<String, String> addedWords = new HashMap<>();
@@ -112,15 +84,9 @@ public class UploadService {
                 }
             });
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("successful", true);
-            response.put("message", "Words from the book have been added.");
-            response.put("added_words", addedWords);
-
-            return ResponseEntity.ok(response);
+            return Map.of("added_words", addedWords);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to parse the book file.");
+            return Map.of("error", "Failed to parse the book file.");
         }
     }
 

@@ -31,40 +31,23 @@ public class QuestionService {
         this.wordHistoryDAO = wordHistoryDAO;
     }
 
-    public ResponseEntity<?> start(Long tableId) {
-        Long userID = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
-
+    public Map<String, Object> start(Long tableId) {
         Word correct = null; // use algorithm to generate word to serve
         double randNum = new Random().nextDouble();
         if (randNum < StatisticsConstants.LEARNING_WORD_SERVE_RATE){
-            if (tableId == null) {
-                correct = wordDAO.getRandomWordWithProgressFromAll(userID);
-            } else {
-                correct = wordDAO.getRandomWordWithProgressFromTable(tableId);
-            }
+            correct = wordDAO.getRandomWordWithProgressFromTable(tableId);
         }
 
-        // handles both cases: 1. algorithm should generate random word and 2. user has no progress on any words
-        if (correct == null){
-            if (tableId == null) {
-                correct = wordDAO.getRandomWordFromAll(userID);
-            } else {
-                correct = wordDAO.getRandomWordFromTable(tableId);
-            }
+        // handles both cases, where no progress in the table and when random condition is false
+        if (correct == null) {
+            correct = wordDAO.getRandomWordFromTable(tableId);
         }
 
         if (correct == null) {
-            response.put("error", "No more words left to learn");
-            return ResponseEntity.ok(response);
+            return Map.of("error", "No more words left to learn");
         }
 
-        List<Word> choiceObjects;
-        if (tableId == null) {
-            choiceObjects = wordDAO.getIncorrectWordsFromAll(correct, userID);
-        } else {
-            choiceObjects = wordDAO.getIncorrectWordsFromTable(correct, tableId);
-        }
+        List<Word> choiceObjects = wordDAO.getIncorrectWordsFromTable(correct, tableId);
 
         choiceObjects.add(correct);
         Collections.shuffle(choiceObjects);
@@ -74,23 +57,14 @@ public class QuestionService {
             choices.add(word.getWord());
         }
 
-        return getFlashcardResponseEntity(response, correct, choices);
+        return getFlashcardResponseEntity(correct, choices);
     }
 
-    public ResponseEntity<?> spelling(Long tableId) {
-        Long userID = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
-
-        Word correct;
-        if (tableId == null) {
-            correct = wordDAO.getRandomWordFromAll(userID);
-        } else {
-            correct = wordDAO.getRandomWordFromTable(tableId);
-        }
+    public Map<String, Object> spelling(Long tableId) {
+        Word correct = wordDAO.getRandomWordFromTable(tableId);
 
         if (correct == null) {
-            response.put("error", "No more words left to learn");
-            return ResponseEntity.ok(response);
+            return Map.of("error", "No more words left to learn");
         }
 
         List<String> choiceStrings = IncorrectWordHeuristics.getIncorrectWords(correct.getWord());
@@ -98,77 +72,67 @@ public class QuestionService {
         choiceStrings.add(correct.getWord());
         Collections.shuffle(choiceStrings);
 
-        return getFlashcardResponseEntity(response, correct, choiceStrings);
+        return getFlashcardResponseEntity(correct, choiceStrings);
     }
 
-    public ResponseEntity<?> image(Long tableId) {
-        Long userID = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        Map<String, Object> response = new HashMap<>();
-
-        Image image;
-        if (tableId == null) {
-            image = imageDAO.getRandomImage(userID);
-        } else {
-            image = imageDAO.getRandomImageFromTable(tableId);
-        }
+    public Map<String, Object> image(long tableId) {
+        Image image = imageDAO.getRandomImageFromTable(tableId);
 
         if (image == null ) {
-            response.put("error", "No images found");
-            return ResponseEntity.ok(response);
+            return Map.of("error", "No images found");
         }
+
         String filename = image.getImageName();
         Word word = wordDAO.getWordWithId(image.getWordId());
 
-
         long flashcardId = UniqueIdGenerator.getInstance().generateUniqueId();
         FlashcardAnswers.getInstance().add(flashcardId, word);
-        response.put("id", flashcardId);
-        response.put("filename", filename);
 
-        return ResponseEntity.ok(response);
+        return Map.of("id", flashcardId, "filename", filename);
     }
 
-    public ResponseEntity<?> answer(String guess, long flashcard_id) {
+    public Map<String, Object> answer(String guess, long flashcard_id) {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-            Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
 
-            if(!FlashcardAnswers.getInstance().contains(flashcard_id)) {
-                return ResponseEntity.notFound().build();
-            }
+        if(!FlashcardAnswers.getInstance().contains(flashcard_id)) {
+            return null;
+        }
 
-            Word correctAnswer = FlashcardAnswers.getInstance().getAnswer(flashcard_id);
-            FlashcardAnswers.getInstance().remove(flashcard_id);
+        Word correctAnswer = FlashcardAnswers.getInstance().getAnswer(flashcard_id);
+        FlashcardAnswers.getInstance().remove(flashcard_id);
 
-            long wordId = correctAnswer.getId();
-            boolean isCorrect = correctAnswer.getWord().equalsIgnoreCase(guess);
+        long wordId = correctAnswer.getId();
+        boolean isCorrect = correctAnswer.getWord().equalsIgnoreCase(guess);
 
-            response.put("correct", isCorrect);
-            response.put("answer", correctAnswer.getWord());
-            response.put("wordId", correctAnswer.getId());
+        response.put("correct", isCorrect);
+        response.put("answer", correctAnswer.getWord());
+        response.put("wordId", correctAnswer.getId());
 
-            wordHistoryDAO.recordAnswer(userId, wordId, isCorrect);
-            if (isCorrect) {
-                statisticsDAO.incrementCorrectAndTotal(userId, wordId);
-            } else {
-                statisticsDAO.incrementTotal(userId, wordId);
-            }
+        wordHistoryDAO.recordAnswer(userId, wordId, isCorrect);
+        if (isCorrect) {
+            statisticsDAO.incrementCorrectAndTotal(userId, wordId);
+        } else {
+            statisticsDAO.incrementTotal(userId, wordId);
+        }
 
-            if (statisticsDAO.getTotalCount(userId, wordId) > StatisticsConstants.MINIMUM_TRIES_TO_LEARN &&
-                    statisticsDAO.getUserSuccessRateForWord(userId, wordId) > StatisticsConstants.MINIMUM_LEARN_RATE) {
-                wordDAO.learnWord(userId, wordId);
-            }
+        if (statisticsDAO.getTotalCount(userId, wordId) > StatisticsConstants.MINIMUM_TRIES_TO_LEARN &&
+                statisticsDAO.getUserSuccessRateForWord(userId, wordId) > StatisticsConstants.MINIMUM_LEARN_RATE) {
+            wordDAO.learnWord(userId, wordId);
+        }
 
-            return ResponseEntity.ok(response);
+        return response;
     }
 
-    private ResponseEntity<?> getFlashcardResponseEntity(Map<String, Object> response, Word correct, List<String> choiceStrings) {
+    private Map<String, Object> getFlashcardResponseEntity(Word correct, List<String> choiceStrings) {
         long flashcardId = UniqueIdGenerator.getInstance().generateUniqueId();
         FlashcardAnswers.getInstance().add(flashcardId, correct);
 
+        Map<String, Object> response = new HashMap<>();
         response.put("id", flashcardId);
         response.put("question", correct.getDefinition());
         response.put("choices", choiceStrings);
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 }

@@ -1,10 +1,14 @@
 package com.example.bankofwords.controller;
 
 import com.example.bankofwords.annotation.Secure;
+import com.example.bankofwords.objects.Table;
 import com.example.bankofwords.service.TableService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/table")
@@ -19,28 +23,31 @@ public class TableController {
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestParam("tableName") String tableName) {
-        return tableService.create(tableName);
+        Table table = tableService.create(tableName);
+        if (table == null)
+            return ResponseEntity.ok(Map.of("error", "You already have the table with the same name"));
+        return ResponseEntity.ok(Map.of("table", table));
     }
 
     @DeleteMapping("/delete/{tableId}")
-    public ResponseEntity<?> delete(@PathVariable("tableId") long tableId) {
-        return tableService.delete(tableId);
+    public void delete(@PathVariable("tableId") long tableId) {
+        tableService.delete(tableId);
     }
 
     @GetMapping("/initial")
     public ResponseEntity<?> initialTables() {
-        return tableService.initialTables();
+        return ResponseEntity.ok(Map.of("tables", tableService.initialTables()));
     }
 
 
     @GetMapping("/user")
     public ResponseEntity<?> userTables() {
-        return tableService.userTables();
+        return ResponseEntity.ok(Map.of("tables", tableService.userTables()));
     }
 
 
     @GetMapping("/words/{tableId}")
     public ResponseEntity<?> words(@PathVariable("tableId") long tableId) {
-        return tableService.getWords(tableId);
+        return ResponseEntity.ok(Map.of("words", tableService.getWords(tableId)));
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("api/question")
 @Secure
@@ -19,23 +21,26 @@ public class QuestionController {
     }
 
     @GetMapping("/default/{tableId}")
-    public ResponseEntity<?> start(@PathVariable(value = "tableId") Long tableId) {
-        return questionService.start(tableId);
+    public ResponseEntity<?> start(@PathVariable(value = "tableId") long tableId) {
+        return ResponseEntity.ok(questionService.start(tableId));
     }
 
     @GetMapping("/spelling/{tableId}")
-    public ResponseEntity<?> spelling(@PathVariable(value = "tableId") Long tableId) {
-        return questionService.spelling(tableId);
+    public ResponseEntity<?> spelling(@PathVariable(value = "tableId") long tableId) {
+        return ResponseEntity.ok(questionService.spelling(tableId));
     }
 
     @GetMapping("/image/{tableId}")
-    public ResponseEntity<?> image(@PathVariable(value = "tableId") Long tableId) {
-        return questionService.image(tableId);
+    public ResponseEntity<?> image(@PathVariable(value = "tableId") long tableId) {
+        return ResponseEntity.ok(questionService.image(tableId));
     }
 
     @PostMapping("/answer")
     public ResponseEntity<?> answer(@RequestParam("guess") String guess,
                                     @RequestParam("id") long flashcard_id) {
-        return questionService.answer(guess, flashcard_id);
+        Map<String, Object> response = questionService.answer(guess, flashcard_id);
+        if (response == null)
+            return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(response);
     }
 }

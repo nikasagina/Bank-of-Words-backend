@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("api/upload")
 @Secure
@@ -23,20 +25,12 @@ public class UploadController {
                                         @RequestParam("word") String word,
                                         @RequestParam("definition") String definition,
                                         @RequestParam(value = "image", required = false) MultipartFile image) {
-        return uploadService.uploadWord(tableId, word, definition, image);
+        return ResponseEntity.ok(Map.of("successful", uploadService.uploadWord(tableId, word, definition, image)));
     }
-
-    @PostMapping("/{wordId}/image")
-    public ResponseEntity<?> addImageToWord(@RequestParam("tableId") Long tableId,
-                                            @PathVariable("wordId") Long wordId,
-                                            @RequestParam("image") MultipartFile image) {
-        return uploadService.addImageToWord(tableId, wordId, image);
-    }
-
 
     @PostMapping("/book")
     public ResponseEntity<?> uploadBook(@RequestParam("tableId") Long tableId,
                                         @RequestParam("file") MultipartFile file) {
-        return uploadService.uploadBook(tableId, file);
+        return ResponseEntity.ok(uploadService.uploadBook(tableId, file));
     }
 }
