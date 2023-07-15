@@ -1,9 +1,6 @@
 package com.example.bankofwords.dao;
 
 import com.example.bankofwords.objects.DailyUserReport;
-import com.example.bankofwords.objects.User;
-import com.example.bankofwords.objects.Word;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -37,7 +34,7 @@ public class WordHistoryDAO {
 
 
     public DailyUserReport getDailyActivity(long userId, Date date) {
-        DailyUserReport dailyUserReport = new DailyUserReport(userId, date);
+        DailyUserReport dailyUserReport = new DailyUserReport(userId);
         String sql = "SELECT word_id, correct FROM word_history wh WHERE user_id = ? && DATE(answer_date) = DATE(?)";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {

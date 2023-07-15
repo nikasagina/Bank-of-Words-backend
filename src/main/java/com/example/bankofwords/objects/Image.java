@@ -1,19 +1,13 @@
 package com.example.bankofwords.objects;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+
+@RequiredArgsConstructor
+@Getter
+@ToString
 public class Image {
-    private final String imageName;
     private final Long wordId;
-
-    public Image(long wordId, String imageName) {
-        this.imageName = imageName;
-        this.wordId = wordId;
-    }
-
-    public String getImageName() {
-        return imageName;
-    }
-
-    public Long getWordId() {
-        return wordId;
-    }
+    private final String imageName;
 }
