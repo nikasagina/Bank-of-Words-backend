@@ -3,15 +3,14 @@ package com.example.bankofwords.service;
 import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.utils.JwtUtil;
 import com.example.bankofwords.utils.AuthValidator;
+import com.example.bankofwords.utils.SecurityUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,121 +31,67 @@ public class AuthServiceTest {
     @Mock
     private JwtUtil jwtUtil;
 
+    @Mock
+    private SecurityUtils securityUtils;
+
 
     @Test
-    void testRegisterUser_SuccessfulRegistration() {
-        // Arrange
-        String username = "testUser";
-        String password = "testPassword";
-        String email = "test@example.com";
+    public void testRegisterUserWithErrors() {
+        when(authValidator.checkRegisterErrors(anyString(), anyString(), anyString())).thenReturn(Collections.singletonList("error"));
 
-        when(authValidator.checkRegisterErrors(username, password, email)).thenReturn(List.of());
+        Map<String, Object> response = authService.registerUser("username", "password", "email");
 
-        // Act
-        ResponseEntity<?> response = authService.registerUser(username, password, email);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertTrue((Boolean) responseBody.get("successful"));
+        assertFalse((Boolean) response.get("successful"));
+        verify(authValidator).checkRegisterErrors(anyString(), anyString(), anyString());
+        verifyNoInteractions(userDAO);
     }
 
     @Test
-    void testRegisterUser_RegistrationErrors() {
-        // Arrange
-        String username = "testUser";
-        String password = "testPassword";
-        String email = "test@example.com";
-        List<String> errors = List.of("Username is not available", "Already registered with this Email");
+    public void testRegisterUserSuccessfully() {
+        when(authValidator.checkRegisterErrors(anyString(), anyString(), anyString())).thenReturn(Collections.emptyList());
+        when(securityUtils.hashPassword(anyString())).thenReturn("hashedPassword");
 
-        when(authValidator.checkRegisterErrors(username, password, email)).thenReturn(errors);
+        Map<String, Object> response = authService.registerUser("username", "password", "email");
 
-        // Act
-        ResponseEntity<?> response = authService.registerUser(username, password, email);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(false, responseBody.get("successful"));
-        assertEquals("Username is not available", responseBody.get("usernameErrorClass"));
-        assertNull(responseBody.get("passwordErrorClass"));
-        assertEquals("Already registered with this Email", responseBody.get("emailErrorClass"));
+        assertTrue((Boolean) response.get("successful"));
+        verify(authValidator).checkRegisterErrors(anyString(), anyString(), anyString());
+        verify(userDAO).addUser("username", "hashedPassword", "email");
     }
 
     @Test
-    void testAuthenticate_ValidCredentials() {
-        // Arrange
-        String username = "testUser";
-        String password = "testPassword";
-        String jwtToken = "testJwtToken";
+    public void testAuthenticateSuccessfully() {
+        when(authValidator.validLogin(anyString(), anyString())).thenReturn(true);
+        when(jwtUtil.generateToken(anyString())).thenReturn("token");
 
-        when(authValidator.validLogin(username, password)).thenReturn(true);
-        when(jwtUtil.generateToken(username)).thenReturn(jwtToken);
+        Map<String, Object> response = authService.authenticate("username", "password");
 
-        // Act
-        ResponseEntity<?> response = authService.authenticate(username, password);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(jwtToken, responseBody.get("token"));
+        assertEquals("token", response.get("token"));
+        verify(authValidator).validLogin(anyString(), anyString());
     }
 
     @Test
-    void testAuthenticate_InvalidCredentials() {
-        // Arrange
-        String username = "testUser";
-        String password = "testPassword";
+    public void testAuthenticateFailed() {
+        when(authValidator.validLogin(anyString(), anyString())).thenReturn(false);
 
-        when(authValidator.validLogin(username, password)).thenReturn(false);
-
-        // Act
-        ResponseEntity<?> response = authService.authenticate(username, password);
-
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("Invalid login credentials.", responseBody.get("error"));
+        assertThrows(AuthService.AuthServiceException.class, () -> authService.authenticate("username", "password"));
+        verify(authValidator).validLogin(anyString(), anyString());
     }
 
     @Test
-    void testLogout_ValidToken() {
-        // Arrange
-        String authHeader = "Bearer testToken";
-        String token = "testToken";
-        String username = "testUser";
+    public void testLogoutSuccessfully() {
+        when(jwtUtil.getUsernameFromToken(anyString())).thenReturn("username");
+        when(jwtUtil.validateToken(anyString(), anyString())).thenReturn(true);
 
-        when(jwtUtil.getUsernameFromToken(token)).thenReturn(username);
-        when(jwtUtil.validateToken(token, username)).thenReturn(true);
-
-        // Act
-        ResponseEntity<?> response = authService.logout(authHeader);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertDoesNotThrow(() -> authService.logout("Bearer token"));
+        verify(jwtUtil).invalidateToken(anyString());
     }
 
     @Test
-    void testLogout_InvalidToken() {
-        // Arrange
-        String authHeader = "Bearer testToken";
-        String token = "testToken";
-        String username = "testUser";
+    public void testLogoutFailed() {
+        when(jwtUtil.getUsernameFromToken(anyString())).thenReturn("username");
+        when(jwtUtil.validateToken(anyString(), anyString())).thenReturn(false);
 
-        when(jwtUtil.getUsernameFromToken(token)).thenReturn(username);
-        when(jwtUtil.validateToken(token, username)).thenReturn(false);
-
-        // Act
-        ResponseEntity<?> response = authService.logout(authHeader);
-
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("Invalid Token", responseBody.get("error"));
+        assertThrows(AuthService.AuthServiceException.class, () -> authService.logout("Bearer token"));
+        verifyNoMoreInteractions(jwtUtil);
     }
 }
