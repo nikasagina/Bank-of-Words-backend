@@ -11,6 +11,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -30,7 +32,8 @@ public class TransferController {
 
     @PostMapping("/import")
     public ResponseEntity<?> importTable(@RequestParam("file") MultipartFile file) throws IOException {
-        return ResponseEntity.ok(transferService.importTable(file));
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(transferService.importTable(file, userId));
 
     }
 

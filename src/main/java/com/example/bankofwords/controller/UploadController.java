@@ -5,6 +5,8 @@ import com.example.bankofwords.service.UploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
@@ -25,7 +27,8 @@ public class UploadController {
                                         @RequestParam("word") String word,
                                         @RequestParam("definition") String definition,
                                         @RequestParam(value = "image", required = false) MultipartFile image) {
-        return ResponseEntity.ok(Map.of("successful", uploadService.uploadWord(tableId, word, definition, image)));
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(Map.of("successful", uploadService.uploadWord(tableId, word, definition, image, userId)));
     }
 
     @PostMapping("/book")

@@ -27,21 +27,15 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public User getInfo() {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public User getInfo(long userId) {
         return userDAO.getUserById(userId);
     }
 
-    public List<Word>  getAllLearningWords() {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public List<Word> getAllLearningWords(long userId) {
         return wordDAO.getAllLearningWords(userId);
     }
 
-    public List<Word> getAllLearnedWords() {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public List<Word> getAllLearnedWords(long userId) {
         return wordDAO.getAllLearnedWords(userId);
     }
 }

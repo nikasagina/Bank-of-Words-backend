@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.Map;
 
@@ -24,7 +26,8 @@ public class StatisticsController {
 
     @GetMapping("/user")
     public ResponseEntity<?> getUserStatistics() {
-        return ResponseEntity.ok(statisticsService.getUserStatistics());
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(statisticsService.getUserStatistics(userId));
     }
 
     @GetMapping("/global")
@@ -34,6 +37,7 @@ public class StatisticsController {
 
     @GetMapping("/user/activity")
     public ResponseEntity<?> getUserActivity() {
-        return ResponseEntity.ok(statisticsService.getUserActivity());
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(statisticsService.getUserActivity(userId));
     }
 }

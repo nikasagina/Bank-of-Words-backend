@@ -39,9 +39,7 @@ public class UploadService {
     }
 
 
-    public boolean uploadWord(long tableId, String word, String definition, MultipartFile image) {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public boolean uploadWord(long tableId, String word, String definition, MultipartFile image, long userId) {
         if (tableDAO.containsWordAndDefinition(tableId, word, definition))
             return false;
 

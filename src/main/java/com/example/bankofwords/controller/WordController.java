@@ -5,6 +5,8 @@ import com.example.bankofwords.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +24,8 @@ public class WordController {
 
     @PostMapping("/learn/{wordId}")
     public ResponseEntity<?> learn(@PathVariable("wordId") long wordId) {
-        return ResponseEntity.ok(Map.of("success", wordService.learn(wordId)));
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(Map.of("success", wordService.learn(wordId, userId)));
     }
 
     @DeleteMapping("/delete/{wordId}")

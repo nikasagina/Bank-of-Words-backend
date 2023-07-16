@@ -33,8 +33,7 @@ public class StatisticsService {
         this.wordHistoryDAO = wordHistoryDAO;
     }
 
-    public Map<String, Object> getUserStatistics() {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+    public Map<String, Object> getUserStatistics(long userId) {
         Map<String, Object> response = new HashMap<>();
 
         Long totalGuessesCount = (long) statisticsDAO.getUserTotalGuessesCount(userId);
@@ -112,9 +111,7 @@ public class StatisticsService {
         return response;
     }
 
-    public Map<String, Object> getUserActivity() {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public Map<String, Object> getUserActivity(long userId) {
         return Map.of("activity", wordHistoryDAO.getFullDailyActivity(userId));
     }
 }

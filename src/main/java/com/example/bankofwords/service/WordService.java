@@ -29,9 +29,7 @@ public class WordService {
         this.lexiconDAO = lexiconDAO;
     }
 
-    public boolean learn(long wordId) {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public boolean learn(long wordId, long userId) {
         if (wordDAO.alreadyKnows(userId, wordId))
             return false;
 

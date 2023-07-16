@@ -24,9 +24,7 @@ public class TableService {
         this.wordDAO = wordDAO;
     }
 
-    public Table create(String tableName) {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public Table create(String tableName, long userId) {
         if (tableDAO.existsTable(userId, tableName)) {
             return null;
         }
@@ -38,15 +36,11 @@ public class TableService {
         tableDAO.deleteTable(tableId);
     }
 
-    public List<Table> initialTables() {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public List<Table> initialTables(long userId) {
         return userId != ADMIN_USER_ID ? tableDAO.getInitialTables() : null;
     }
 
-    public List<Table> userTables() {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public List<Table> userTables(long userId) {
         return tableDAO.getUserTables(userId);
     }
 

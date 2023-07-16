@@ -40,9 +40,7 @@ public class TransferService {
     }
 
 
-    public Map<String, Object> importTable(MultipartFile file) throws IOException {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-
+    public Map<String, Object> importTable(MultipartFile file, long userId) throws IOException {
         Gson gson = new Gson();
         Type type = new TypeToken<Map<String, Object>>() {}.getType();
         Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8);

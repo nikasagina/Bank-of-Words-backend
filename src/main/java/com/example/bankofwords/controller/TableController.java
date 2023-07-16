@@ -6,6 +6,8 @@ import com.example.bankofwords.service.TableService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +25,8 @@ public class TableController {
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestParam("tableName") String tableName) {
-        Table table = tableService.create(tableName);
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        Table table = tableService.create(tableName, userId);
         if (table == null)
             return ResponseEntity.ok(Map.of("error", "You already have the table with the same name"));
         return ResponseEntity.ok(Map.of("table", table));
@@ -36,13 +39,15 @@ public class TableController {
 
     @GetMapping("/initial")
     public ResponseEntity<?> initialTables() {
-        return ResponseEntity.ok(Map.of("tables", tableService.initialTables()));
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(Map.of("tables", tableService.initialTables(userId)));
     }
 
 
     @GetMapping("/user")
     public ResponseEntity<?> userTables() {
-        return ResponseEntity.ok(Map.of("tables", tableService.userTables()));
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(Map.of("tables", tableService.userTables(userId)));
     }
 
 

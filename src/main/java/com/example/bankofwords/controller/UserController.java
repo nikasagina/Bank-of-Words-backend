@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,10 +28,11 @@ public class UserController {
 
     @GetMapping("/info")
     public ResponseEntity<?> getInfo() {
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+
+        User user = userService.getInfo(userId);
+
         Map<String, Object> response = new HashMap<>();
-
-        User user = userService.getInfo();
-
         response.put("username", user.getUsername());
         response.put("email", user.getEmail());
         response.put("joinDate", user.getFormattedJoinDate());
@@ -38,11 +41,13 @@ public class UserController {
 
     @GetMapping("/learning")
     public ResponseEntity<?> getAllLearningWords() {
-        return ResponseEntity.ok(Map.of("learning_words", userService.getAllLearnedWords()));
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(Map.of("learning_words", userService.getAllLearnedWords(userId)));
     }
 
     @GetMapping("/learned")
     public ResponseEntity<?> getAllLearnedWords() {
-        return ResponseEntity.ok(Map.of("learned_words", userService.getAllLearnedWords()));
+        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        return ResponseEntity.ok(Map.of("learned_words", userService.getAllLearnedWords(userId)));
     }
 }
