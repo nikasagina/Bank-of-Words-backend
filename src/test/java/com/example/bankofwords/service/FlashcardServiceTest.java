@@ -5,6 +5,7 @@ import com.example.bankofwords.dao.WordDAO;
 import com.example.bankofwords.objects.Image;
 import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.singletons.FlashcardAnswers;
+import com.example.bankofwords.singletons.UniqueIdGenerator;
 import com.example.bankofwords.utils.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,162 +33,69 @@ public class FlashcardServiceTest {
     private WordDAO wordDAO;
 
     @Mock
-    private JwtUtil jwtUtil;
-
-    @Mock
     private ImageDAO imageDAO;
 
 
     @Test
-    void whenRequestsWithInvalidToken_returnsUnauthorizedResponse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
+    void testGetTextFront() {
+        Word word = new Word(1L, "word", "definition", 1L);
+        when(wordDAO.getRandomWordFromTable(anyLong())).thenReturn(word);
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(false);
+        Map<String, Object> response = flashcardService.getTextFront(1L);
 
-        // Act
-        ResponseEntity<?> response1 = flashcardService.getTextFront(authHeader, 1L);
-        ResponseEntity<?> response2 = flashcardService.getImageFront(authHeader, 1L);
-        ResponseEntity<?> response3 = flashcardService.getFlashcardBack(authHeader, 1L);
-
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response1.getStatusCode());
-        assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
-        assertEquals(HttpStatus.UNAUTHORIZED, response3.getStatusCode());
+        assertNotNull(response);
+        assertEquals("definition", response.get("frontText"));
     }
 
     @Test
-    void whenGetTextFrontWithNoWordsInTable_returnsOkResponseWithErrorMessage() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        long tableId = 1L;
+    void testGetTextFrontNoWord() {
+        when(wordDAO.getRandomWordFromTable(anyLong())).thenReturn(null);
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(wordDAO.getRandomWordFromTable(tableId)).thenReturn(null);
+        Map<String, Object> response = flashcardService.getTextFront(1L);
 
-        // Act
-        ResponseEntity<?> response = flashcardService.getTextFront(authHeader, 1L);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("No more words left to learn", responseBody.get("error"));
+        assertNotNull(response);
+        assertEquals("No more words left to learn", response.get("error"));
     }
 
     @Test
-    void whenValidGetTextFront_returnsOkResponseWithData() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        long tableId = 1L;
-        Word word = new Word(1L, "testWord", "definition", tableId);
+    void testGetImageFront() {
+        Image image = new Image(1L, "imageName");
+        Word word = new Word(1L, "word", "definition", 1L);
+        when(imageDAO.getRandomImageFromTable(anyLong())).thenReturn(image);
+        when(wordDAO.getWordWithId(anyLong())).thenReturn(word);
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(wordDAO.getRandomWordFromTable(tableId)).thenReturn(word);
+        Map<String, Object> response = flashcardService.getImageFront(1L);
 
-        // Act
-        ResponseEntity<?> response = flashcardService.getTextFront(authHeader, 1L);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertTrue(responseBody.containsKey("id"));
-        assertEquals(word.getDefinition(), responseBody.get("frontText"));
+        assertNotNull(response);
+        assertEquals("imageName", response.get("imageUrl"));
     }
 
     @Test
-    void whenGetImageFrontWithNoImagesInTable_returnsOkResponseWithErrorMessage() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        long tableId = 1L;
+    void testGetImageFrontNoImage() {
+        when(imageDAO.getRandomImageFromTable(anyLong())).thenReturn(null);
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(imageDAO.getRandomImageFromTable(tableId)).thenReturn(null);
+        Map<String, Object> response = flashcardService.getImageFront(1L);
 
-        // Act
-        ResponseEntity<?> response = flashcardService.getImageFront(authHeader, 1L);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("No images found", responseBody.get("error"));
+        assertNotNull(response);
+        assertEquals("No images found", response.get("error"));
     }
 
     @Test
-    void whenValidGetImageFront_returnsOkResponseWithData() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        long tableId = 1L;
-        Image image = new Image(1L, "testUrl");
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(imageDAO.getRandomImageFromTable(tableId)).thenReturn(image);
-
-        // Act
-        ResponseEntity<?> response = flashcardService.getImageFront(authHeader, 1L);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertTrue(responseBody.containsKey("id"));
-        assertEquals(image.getImageName(), responseBody.get("imageUrl"));
-    }
-
-    @Test
-    void whenGetFlashcardBackRequestWithNoneExistentId_returnsNotFoundResponse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-
-        // Act
-        ResponseEntity<?> response = flashcardService.getFlashcardBack(authHeader, -1L);
-
-        // Assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
-    void whenAnswerRequestWithValidId_returnsOkResponseWithFlashcardData() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        long flashcardId = 1L;
-        long tableId = 1L;
-        long wordId = 2L;
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-
+    void testGetFlashcardBack() {
+        Word word = new Word(1L, "word", "definition", 1L);
         FlashcardAnswers flashcardAnswers = FlashcardAnswers.getInstance();
-        Word correctAnswer = new Word(wordId, "correctGuess", "definition", tableId);
-        flashcardAnswers.add(flashcardId, correctAnswer);
+        flashcardAnswers.add(1L, word);
 
-        // Act
-        ResponseEntity<?> response = flashcardService.getFlashcardBack(authHeader, flashcardId);
+        String result = flashcardService.getFlashcardBack(1L);
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(correctAnswer.getWord(), responseBody.get("back"));
+        assertNotNull(result);
+        assertEquals("word", result);
+    }
 
-        // Clean up
-        flashcardAnswers.remove(flashcardId);
+    @Test
+    void testGetFlashcardBackNoFlashcard() {
+        String result = flashcardService.getFlashcardBack(-1L);
+
+        assertNull(result);
     }
 }
