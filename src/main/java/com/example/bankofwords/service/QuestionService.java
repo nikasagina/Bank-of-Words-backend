@@ -31,9 +31,9 @@ public class QuestionService {
         this.wordHistoryDAO = wordHistoryDAO;
     }
 
-    public Map<String, Object> start(Long tableId) {
+    public Map<String, Object> start(Long tableId, double randNum) {
         Word correct = null; // use algorithm to generate word to serve
-        double randNum = new Random().nextDouble();
+
         if (randNum < StatisticsConstants.LEARNING_WORD_SERVE_RATE){
             correct = wordDAO.getRandomWordWithProgressFromTable(tableId);
         }
@@ -91,8 +91,7 @@ public class QuestionService {
         return Map.of("id", flashcardId, "filename", filename);
     }
 
-    public Map<String, Object> answer(String guess, long flashcard_id) {
-        Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+    public Map<String, Object> answer(long userId, String guess, long flashcard_id) {
         Map<String, Object> response = new HashMap<>();
 
         if(!FlashcardAnswers.getInstance().contains(flashcard_id)) {
