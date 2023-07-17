@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -41,92 +42,53 @@ public class UserServiceTest {
 
 
     @Test
-    void whenRequestsWithInvalidToken_returnsUnauthorizedResponse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(false);
-
-        // Act
-        ResponseEntity<?> response1 = userService.getInfo(authHeader);
-        ResponseEntity<?> response2 = userService.getAllLearningWords(authHeader);
-        ResponseEntity<?> response3 = userService.getAllLearnedWords(authHeader);
-
-         // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response1.getStatusCode());
-        assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
-        assertEquals(HttpStatus.UNAUTHORIZED, response3.getStatusCode());
-    }
-
-    @Test
-    void whenGetInfoRequest_returnsOkResponseInfo() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        User user = new User(username, "email@test.com", LocalDateTime.now());
-
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserByUsername(username)).thenReturn(user);
-
-        // Act
-        ResponseEntity<?> response = userService.getInfo(authHeader);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(user.getUsername(), responseBody.get("username"));
-        assertEquals(user.getEmail(), responseBody.get("email"));
-        assertEquals(user.getFormattedJoinDate(), responseBody.get("joinDate"));
-    }
-
-    @Test
-    void whenGetAllLearningWordsRequest_returnsOkResponseWithWord() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
+    public void getInfo_shouldReturnUserInfo() {
+        // given
         long userId = 1L;
-        List<Word> wordList = List.of(new Word(1L, "testWord", "definition", 1L));
+        User user = new User( "John", "john.doe@example.com", LocalDateTime.now());
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getAllLearningWords(userId)).thenReturn(wordList);
+        when(userDAO.getUserById(userId)).thenReturn(user);
 
-        // Act
-        ResponseEntity<?> response = userService.getAllLearningWords(authHeader);
+        // when
+        User result = userService.getInfo(userId);
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(wordList, responseBody.get("learning_words"));
+        // then
+        assertEquals(user, result);
     }
 
     @Test
-    void whenGetAllLearnedWordsRequest_returnsOkResponseWithWord() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
+    public void getAllLearningWords_shouldReturnList() {
+        // given
         long userId = 1L;
-        List<Word> wordList = List.of(new Word(1L, "testWord", "definition", 1L));
+        List<Word> expectedWords = List.of(
+                new Word(1L, "example", "a thing characteristic of its kind or illustrating a general rule", userId),
+                new Word(2L, "test", "a procedure intended to establish the quality, performance, or reliability of something", userId)
+        );
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getAllLearnedWords(userId)).thenReturn(wordList);
+        when(wordDAO.getAllLearningWords(userId)).thenReturn(expectedWords);
 
-        // Act
-        ResponseEntity<?> response = userService.getAllLearnedWords(authHeader);
+        // when
+        List<Word> result = userService.getAllLearningWords(userId);
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(wordList, responseBody.get("learned_words"));
+        // then
+        assertEquals(expectedWords, result);
+    }
+
+    @Test
+    public void getAllLearnedWords_shouldReturnList() {
+        // given
+        long userId = 1L;
+        List<Word> expectedWords = List.of(
+                new Word(3L, "book", "a written or printed work consisting of pages glued or sewn together along one side and bound in covers", userId),
+                new Word(4L, "computer", "an electronic device that can store, retrieve, and process data", userId)
+        );
+
+        when(wordDAO.getAllLearnedWords(userId)).thenReturn(expectedWords);
+
+        // when
+        List<Word> result = userService.getAllLearnedWords(userId);
+
+        // then
+        assertEquals(expectedWords, result);
     }
 }
