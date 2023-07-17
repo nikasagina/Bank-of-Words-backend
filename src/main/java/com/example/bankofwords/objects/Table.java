@@ -7,10 +7,11 @@ import lombok.ToString;
 
 @RequiredArgsConstructor
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString
 public class Table {
     private final long tableId;
     private final long creatorId;
+    @EqualsAndHashCode.Include
     private final String name;
 }
