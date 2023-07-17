@@ -2,21 +2,15 @@ package com.example.bankofwords.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.mock.web.MockMultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -24,7 +18,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.bankofwords.dao.*;
 import com.example.bankofwords.objects.Table;
 import com.example.bankofwords.objects.Word;
-import com.example.bankofwords.utils.JwtUtil;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 
@@ -38,12 +34,6 @@ public class TransferServiceTest {
     private WordDAO wordDAO;
 
     @Mock
-    private UserDAO userDAO;
-
-    @Mock
-    private JwtUtil jwtUtil;
-
-    @Mock
     private ImageDAO imageDAO;
 
     @Mock
@@ -51,114 +41,69 @@ public class TransferServiceTest {
 
 
     @Test
-    void whenRequestsWithInvalidToken_returnsUnauthorizedResponse() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
+    void testImportTable() throws IOException {
+        // Prepare test data
+        String tableName = "testTable";
+        String jsonContent = "{\"tableName\":\"" + tableName + "\", \"words\": [{\"word\": \"test\", \"definition\": \"test definition\", \"imageUrl\": \"test.jpg\"}]}";
+        MultipartFile file = new MockMultipartFile("file", "file.json", "application/json", jsonContent.getBytes());
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(false);
+        when(tableDAO.getUserTables(anyLong())).thenReturn(new ArrayList<>());
+        when(tableDAO.getInitialTables()).thenReturn(new ArrayList<>());
+        when(tableDAO.createTable(anyLong(), any())).thenReturn(new Table(1L, 1L, tableName));
+        when(wordDAO.getWordId(any(), any(), anyLong())).thenReturn(1L);
 
-        // Act
-        ResponseEntity<?> response1 = transferService.importTable(authHeader, null);
-        ResponseEntity<?> response2 = transferService.exportTable(authHeader, 1L);
+        // Call the method under test
+        Map<String, Object> result = transferService.importTable(file, 1L);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response1.getStatusCode());
-        assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
+        // Assertions
+        assertTrue(result.containsKey("table"));
+        assertEquals(tableName, ((Table) result.get("table")).getName());
     }
 
     @Test
-    void whenImportingTableWithExistingName_returnsErrorResponse() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String tableName = "existingTableName";
+    void testImportTableErrors() throws IOException {
+        // Prepare test data
+        String tableName = "testTable";
+        String jsonContent = "{\"tableName\":\"" + tableName + "\", \"words\": [{\"word\": \"test\", \"definition\": \"test definition\", \"imageUrl\": \"test.jpg\"}]}";
+        MultipartFile file = new MockMultipartFile("file", "file.json", "application/json", jsonContent.getBytes());
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(1L);
         when(tableDAO.getUserTables(1L)).thenReturn(List.of(new Table(1L, 1L, tableName)));
 
-        Map<String, Object> json = new HashMap<>();
-        json.put("tableName", tableName);
-        json.put("words", List.of(Map.of("word", "foo", "definition", "bar", "imageUrl", "test.json"),
-                                  Map.of("word", "bar", "definition", "baz", "imageUrl", "")));
+        // Call the method under test
+        Map<String, Object> result = transferService.importTable(file, 1L);
 
-        MockMultipartFile file = new MockMultipartFile("file", "test.json", MediaType.APPLICATION_JSON_VALUE,
-                new ObjectMapper().writeValueAsString(json).getBytes());
-
-        // Act
-        ResponseEntity<?> response = transferService.importTable(authHeader, file);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody() instanceof Map);
-        Map<?, ?> responseBody = (Map<?, ?>) response.getBody();
-        assertTrue(responseBody.containsKey("error"));
-        assertEquals("You already have a table with the same name as the imported table", responseBody.get("error"));
+        // Assertions
+        assertTrue(result.containsKey("error"));
     }
 
     @Test
-    void whenImportingTableWithValidToken_returnsSuccessResponse() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String tableName = "newTableName";
-        long userId = 1L;
-        Table table = new Table(1L, 1L, tableName);
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(tableDAO.createTable(userId, tableName)).thenReturn(table);
-        when(tableDAO.getUserTables(userId)).thenReturn(List.of());
-
-        Map<String, Object> json = new HashMap<>();
-        json.put("tableName", tableName);
-        json.put("words", List.of(Map.of("word", "foo", "definition", "bar", "imageUrl", "test.json"),
-                Map.of("word", "bar", "definition", "baz", "imageUrl", "")));
-
-        MockMultipartFile file = new MockMultipartFile("file", "test.json", MediaType.APPLICATION_JSON_VALUE,
-                new ObjectMapper().writeValueAsString(json).getBytes());
-
-        // Act
-        ResponseEntity<?> response = transferService.importTable(authHeader, file);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody() instanceof Map);
-        Map<?, ?> responseBody = (Map<?, ?>) response.getBody();
-        assertTrue(responseBody.containsKey("table"));
-    }
-
-    @Test
-    void whenExportingTableWithValidTokenAndTableName_returnsFileResource() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String tableName = "testTable";
+    void testExportTable() throws IOException {
+        // Prepare test data
         long tableId = 1L;
+        String tableName = "testTable";
+        String wordName = "test";
+        String wordDefinition = "test definition";
+        String imageUrl = "test.jpg";
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(tableDAO.getTable(1L)).thenReturn(new Table(1L, 1L, tableName));
-        when(wordDAO.getTableWords(1L)).thenReturn(List.of(new Word(1L, "bar", "foo", 1L)));
-        when(imageDAO.getImageUrl(1L)).thenReturn("");
-        // Act
-        ResponseEntity<Resource> response = transferService.exportTable(authHeader, tableId);
+        Table table = new Table(tableId, 1L, tableName);
+        Word word = new Word(1L, wordName, wordDefinition, tableId);
+        List<Word> wordList = Collections.singletonList(word);
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        Resource responseBody = response.getBody();
-        assertNotNull(responseBody.getFile());
-        assertEquals(tableName + ".json", responseBody.getFilename());
+        when(tableDAO.getTable(anyLong())).thenReturn(table);
+        when(wordDAO.getTableWords(anyLong())).thenReturn(wordList);
+        when(imageDAO.getImageUrl(anyLong())).thenReturn(imageUrl);
 
-        // Cleanup
-        File file = new File(tableName + ".json");
-        if (file.exists()) {
-            file.delete();
-        }
+        // Call the method under test
+        String result = transferService.exportTable(tableId);
+
+        // Assertions
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> resultMap = mapper.readValue(result, Map.class);
+
+        assertEquals(tableName, resultMap.get("tableName"));
+        List<Map<String, String>> words = (List<Map<String, String>>) resultMap.get("words");
+        assertEquals(wordName, words.get(0).get("word"));
+        assertEquals(wordDefinition, words.get(0).get("definition"));
+        assertEquals(imageUrl, words.get(0).get("imageUrl"));
     }
 }
