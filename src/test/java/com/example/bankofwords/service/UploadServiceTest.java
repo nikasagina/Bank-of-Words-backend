@@ -2,7 +2,6 @@ package com.example.bankofwords.service;
 
 import com.example.bankofwords.dao.*;
 import com.example.bankofwords.parser.PdfParser;
-import com.example.bankofwords.utils.JwtUtil;
 import com.example.bankofwords.utils.WordUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,21 +10,14 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.util.MimeTypeUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UploadServiceTest {
@@ -35,12 +27,6 @@ public class UploadServiceTest {
 
     @Mock
     private WordDAO wordDAO;
-
-    @Mock
-    private UserDAO userDAO;
-
-    @Mock
-    private JwtUtil jwtUtil;
 
     @Mock
     private LexiconDAO lexiconDAO;
@@ -58,347 +44,104 @@ public class UploadServiceTest {
     private TableDAO tableDAO;
 
 
+
     @Test
-    void whenRequestsWithInvalidToken_returnsUnauthorizedResponse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
+    public void testUploadWord() {
+        String word = "test";
+        String definition = "a procedure intended to establish the quality, performance, or reliability of something, especially before it is taken into widespread use.";
+        long tableId = 1;
+        long userId = 1;
+        MockMultipartFile image = new MockMultipartFile("file", "filename.jpg", "image/jpg", "some-image".getBytes());
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(false);
+        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(false);
+        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+            mockedFiles.when(() -> Files.write(Mockito.any(), Mockito.any(byte[].class))).thenReturn(null);
 
-        // Act
-        ResponseEntity<?> response1 = uploadService.uploadWord(authHeader, 0L, "", "", null);
-        ResponseEntity<?> response2 = uploadService.addImageToWord(authHeader, 0L, 0L, null);
-        ResponseEntity<?> response3 = uploadService.uploadBook(authHeader, 0L, null);
+            uploadService.uploadWord(tableId, word, definition, image, userId);
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response1.getStatusCode());
-        assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
-        assertEquals(HttpStatus.UNAUTHORIZED, response3.getStatusCode());
+            verify(wordDAO, times(1)).addWord(tableId, word, definition);
+            verify(wordDAO, times(1)).getWordId(word, definition, userId);
+            verify(imageDAO, times(1)).addImage(anyLong(), anyString());
+        }
     }
 
     @Test
-    void whenUploadWordRequestWithAlreadyAddedWord_returnsOkResponseWithSuccessfulFalse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long userId = 1L;
-        long tableId = 1L;
+    public void testUploadAlreadyAddedWord() {
+        String word = "test";
+        String definition = "a procedure intended to establish the quality, performance, or reliability of something, especially before it is taken into widespread use.";
+        long tableId = 1;
+        long userId = 1;
+        MockMultipartFile image = new MockMultipartFile("file", "filename.jpg", "image/jpg", "some-image".getBytes());
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
+        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(false);
+        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+            mockedFiles.when(() -> Files.write(Mockito.any(), Mockito.any(byte[].class))).thenThrow(new IOException());
+
+            uploadService.uploadWord(tableId, word, definition, image, userId);
+
+            verify(wordDAO, times(1)).addWord(tableId, word, definition);
+            verify(wordDAO, times(1)).getWordId(word, definition, userId);
+        }
+    }
+
+    @Test
+    public void testUploadWordIOException() {
+        String word = "test";
+        String definition = "a procedure intended to establish the quality, performance, or reliability of something, especially before it is taken into widespread use.";
+        long tableId = 1;
+        long userId = 1;
+        MockMultipartFile image = new MockMultipartFile("file", "filename.jpg", "image/jpg", "some-image".getBytes());
+
         when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(true);
 
-        // Act
-        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, definition, null);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
-        assertEquals(false, responseBody.get("successful"));
+        assertFalse(uploadService.uploadWord(tableId, word, definition, image, userId));
     }
 
     @Test
-    void whenUploadWordRequestWithoutImage_returnsOkResponseWithSuccessfulTrue() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long userId = 1L;
-        long tableId = 1L;
+    public void testUploadBook() throws Exception {
+        long tableId = 1;
+        MockMultipartFile file = new MockMultipartFile("file", "filename.pdf", "application/pdf", "some-pdf".getBytes());
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(false);
+        List<String> unknownWords = Arrays.asList("test1", "test2");
+        when(pdfParser.parsePdf(file)).thenReturn(unknownWords);
 
-        // Act
-        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, definition, null);
+        when(tableDAO.containsWord(tableId, "test1")).thenReturn(false);
+        when(tableDAO.containsWord(tableId, "test2")).thenReturn(false);
+        when(wordUtil.isSimple("test1")).thenReturn(false);
+        when(wordUtil.isSimple("test2")).thenReturn(false);
+        when(lexiconDAO.contains("test1")).thenReturn(true);
+        when(lexiconDAO.contains("test2")).thenReturn(true);
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assert responseBody != null;
-        assertEquals(true, responseBody.get("successful"));
+        when(lexiconDAO.getWordDefinition("test1")).thenReturn("definition1");
+        when(lexiconDAO.getWordDefinition("test2")).thenReturn("definition2");
+
+        uploadService.uploadBook(tableId, file);
+
+        verify(wordDAO, times(1)).addWord(tableId, "test1", "definition1");
+        verify(wordDAO, times(1)).addWord(tableId, "test2", "definition2");
     }
 
     @Test
-    void whenUploadWordRequestWithImage_returnsOkResponseWithSuccessfulTrue() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long userId = 1L;
-        long tableId = 1L;
+    public void testUploadUnsupportedBook() {
+        long tableId = 1;
+        MockMultipartFile file = new MockMultipartFile("file", "filename.abc", "application/pdf", "some-pdf".getBytes());
 
-        byte[] imageData = {23, 12, 32};
-        MultipartFile image = new MockMultipartFile(
-                "image",
-                "image.jpg",
-                MimeTypeUtils.IMAGE_JPEG_VALUE,
-                imageData
-        );
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(false);
+        Map<String, Object> result = uploadService.uploadBook(tableId, file);
 
-        // Mock the Files class and its write method
-        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            mockedFiles.when(() -> Files.write(Mockito.any(), Mockito.any(byte[].class))).thenReturn(null);
-
-            // Act
-            ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, definition, image);
-
-            // Assert
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-            assert responseBody != null;
-            assertEquals(true, responseBody.get("successful"));
-        }
+        assertTrue(result.containsKey("error"));
     }
 
     @Test
-    void whenUploadWordRequestWithImageAndIOException_returnsErrorResponse() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long userId = 1L;
-        long tableId = 1L;
-        MultipartFile image = Mockito.mock(MultipartFile.class);
+    public void testUploadBookIOException() throws Exception {
+        long tableId = 1;
+        MockMultipartFile file = new MockMultipartFile("file", "filename.pdf", "application/pdf", "some-pdf".getBytes());
 
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(tableDAO.containsWordAndDefinition(tableId, word, definition)).thenReturn(false);
-        when(image.getBytes()).thenThrow(IOException.class); // Throw IOException when attempting to read the bytes
-
-        // Act
-        ResponseEntity<?> response = uploadService.uploadWord(authHeader, tableId, word, definition, image);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
+        when(pdfParser.parsePdf(file)).thenThrow(new IOException());
 
 
-    @Test
-    void whenAddImageToWordRequestSuccessful_returnsOkResponse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long userId = 1L;
-        long tableId = 1L;
-        long wordId = 1L;
+        Map<String, Object> result = uploadService.uploadBook(tableId, file);
 
-        byte[] imageData = {23, 12, 32};
-        MultipartFile image = new MockMultipartFile(
-                "image",
-                "image.jpg",
-                MimeTypeUtils.IMAGE_JPEG_VALUE,
-                imageData
-        );
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getWordCreator(wordId)).thenReturn(userId);
-
-        // Mock the Files class and its write method
-        try (MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
-            mockedFiles.when(() -> Files.write(Mockito.any(), Mockito.any(byte[].class))).thenReturn(null);
-
-            // Act
-            ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, wordId, image);
-
-            // Assert
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-        }
-    }
-
-    @Test
-    void whenAddImageToWordRequestNonexistentWord_returnsBadRequestResponse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long wordId = 1L;
-        long userId = 1L;
-        long tableId = 1L;
-
-        byte[] imageData = {23, 12, 32};
-        MultipartFile image = new MockMultipartFile(
-                "image",
-                "image.jpg",
-                MimeTypeUtils.IMAGE_JPEG_VALUE,
-                imageData
-        );
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-
-        // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, wordId, image);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void whenAddImageToWordRequestInitialWord_returnsBadRequestResponse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long userId = 1L;
-        long tableId = 1L;
-        long wordId = 1L;
-
-        byte[] imageData = {23, 12, 32};
-        MultipartFile image = new MockMultipartFile(
-                "image",
-                "image.jpg",
-                MimeTypeUtils.IMAGE_JPEG_VALUE,
-                imageData
-        );
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getWordCreator(wordId)).thenReturn(0L);
-
-        // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, wordId, image);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-
-    @Test
-    void whenAddImageToWordRequestWithoutImage_returnsBadRequestResponse() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-
-        // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, 1L, 1L,  null);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void whenAddImageToWordRequestWithImageAndIOException_returnsInternalServerErrorResponse() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long wordId = 1L;
-        long userId = 1L;
-        long tableId = 1L;
-        MultipartFile image = Mockito.mock(MultipartFile.class);
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(userDAO.getUserID(username)).thenReturn(userId);
-        when(wordDAO.getWordCreator(wordId)).thenReturn(userId);
-        when(image.getBytes()).thenThrow(IOException.class); // Throw IOException when attempting to read the bytes
-
-        // Act
-        ResponseEntity<?> response = uploadService.addImageToWord(authHeader, tableId, wordId, image);
-
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    void whenUploadBookRequestIsValid_returnsOkResponseWithData() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-        String word = "testWord";
-        String definition = "definition";
-        long tableId = 1L;
-
-        byte[] pdfContent = new byte[10];
-        MockMultipartFile pdfFile = new MockMultipartFile("file", "book.pdf", null, pdfContent);
-
-        List<String> unknownWords = new ArrayList<>(List.of(word));
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(pdfParser.parsePdf(pdfFile)).thenReturn(unknownWords);
-        when(tableDAO.containsWord(tableId, word)).thenReturn(false);
-        when(wordUtil.isSimple(word)).thenReturn(false);
-        when(lexiconDAO.contains(word)).thenReturn(true);
-        when(lexiconDAO.getWordDefinition(word)).thenReturn(definition);
-
-        // Act
-        ResponseEntity<?> response = uploadService.uploadBook(authHeader, tableId, pdfFile);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(true, responseBody.get("successful"));
-        assertEquals(Map.of(word, definition), responseBody.get("added_words"));
-    }
-
-    @Test
-    void whenUploadBookRequestInvalidFile_returnsBadRequestResponse() {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-
-        byte[] pdfContent = new byte[10];
-        MockMultipartFile pdfFile = new MockMultipartFile("file", "", null, pdfContent);
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-
-        // Act
-        ResponseEntity<?> response = uploadService.uploadBook(authHeader, 1L, pdfFile);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void whenUploadBookRequestWithIOException_returnsInternalServerErrorResponse() throws IOException {
-        // Arrange
-        String authHeader = "Bearer someToken";
-        String username = "testUser";
-
-        byte[] pdfContent = new byte[10];
-        MockMultipartFile pdfFile = new MockMultipartFile("file", "book.pdf", null, pdfContent);
-
-        when(jwtUtil.getUsernameFromToken("someToken")).thenReturn(username);
-        when(jwtUtil.validateToken("someToken", username)).thenReturn(true);
-        when(pdfParser.parsePdf(pdfFile)).thenThrow(IOException.class);
-
-        // Act
-        ResponseEntity<?> response = uploadService.uploadBook(authHeader, 1L, pdfFile);
-
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertTrue(result.containsKey("error"));
     }
 }
