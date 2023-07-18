@@ -74,7 +74,7 @@ public class TransferService {
         return Map.of("table", table);
     }
 
-    public String exportTable(long tableId) {
+    public String exportTable(long tableId) throws JsonProcessingException {
         Map<String, Object> response = new HashMap<>();
 
         Table table = tableDAO.getTable(tableId);
@@ -87,14 +87,9 @@ public class TransferService {
         response.put("tableName", table.getName());
         response.put("words", words);
 
-        try {
-            // Convert the response to JSON
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(response);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            log.info("Error while processing JSON to export tableId: {}", table);
-            return "";
-        }
+        // Convert the response to JSON
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(response);
+
     }
 }
