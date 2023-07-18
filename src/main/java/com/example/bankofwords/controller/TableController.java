@@ -10,6 +10,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -40,7 +41,8 @@ public class TableController {
     @GetMapping("/initial")
     public ResponseEntity<?> initialTables() {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        return ResponseEntity.ok(Map.of("tables", tableService.initialTables(userId)));
+        List<Table> initials = tableService.initialTables(userId);
+        return ResponseEntity.ok(Map.of("tables", initials == null ? "" : initials));
     }
 
 
