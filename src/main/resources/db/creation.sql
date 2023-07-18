@@ -65,12 +65,3 @@ CREATE TABLE word_history (
                               FOREIGN KEY (word_id) REFERENCES words(word_id),
                               PRIMARY KEY (user_id, word_id, answer_date)
 );
-
-
-insert into users (user_id, username, password_hash, email) VALUES (1, 'admin', '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5', '');
-
-INSERT INTO tables (table_id, creator_id, table_name) VALUES (1, 1, 'initial-simple');
-INSERT INTO tables (table_id, creator_id, table_name) VALUES (2, 1, 'initial-medium');
-INSERT INTO tables (table_id, creator_id, table_name) VALUES (3, 1, 'initial-hard');
-
-INSERT INTO words (word, definition, table_id) VALUES ('hello', 'Used as a greeting or to begin a phone conversation.', 1);
