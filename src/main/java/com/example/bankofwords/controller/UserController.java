@@ -42,7 +42,7 @@ public class UserController {
     @GetMapping("/learning")
     public ResponseEntity<?> getAllLearningWords() {
         Long userId = (Long) RequestContextHolder.currentRequestAttributes().getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
-        return ResponseEntity.ok(Map.of("learning_words", userService.getAllLearnedWords(userId)));
+        return ResponseEntity.ok(Map.of("learning_words", userService.getAllLearningWords(userId)));
     }
 
     @GetMapping("/learned")
