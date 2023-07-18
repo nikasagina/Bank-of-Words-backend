@@ -41,6 +41,10 @@ public class JwtRequestInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NotNull HttpServletRequest request,
                              @NotNull HttpServletResponse response,
                              @NotNull Object handler) throws Exception {
+        if (request.getRequestURI().startsWith("/swagger-ui")){
+            return true; // swagger documentation
+        }
+
         Secure controllerClass = getAnnotation(request);
         if (controllerClass == null){
             return false;
