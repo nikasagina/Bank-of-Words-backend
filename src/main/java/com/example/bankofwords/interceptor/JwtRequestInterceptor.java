@@ -5,6 +5,7 @@ import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 @Component
 @Secure(value = false)
+@Slf4j
 public class JwtRequestInterceptor implements HandlerInterceptor {
 
     private final JwtUtil jwtUtil;
@@ -61,6 +63,7 @@ public class JwtRequestInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        log.info("Authorization failed");
         response.setStatus(401);
         return false;
     }
@@ -81,7 +84,7 @@ public class JwtRequestInterceptor implements HandlerInterceptor {
                 return noAuth;
             }
         }
-
+        log.info("handler not found for the path: {}", request.getPathInfo());
         return null; //in this case there is no handler for that request which is 404 not found error
     }
 }

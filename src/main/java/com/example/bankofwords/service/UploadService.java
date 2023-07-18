@@ -1,15 +1,14 @@
 package com.example.bankofwords.service;
 
-import com.example.bankofwords.dao.*;
+import com.example.bankofwords.dao.ImageDAO;
+import com.example.bankofwords.dao.LexiconDAO;
+import com.example.bankofwords.dao.TableDAO;
+import com.example.bankofwords.dao.WordDAO;
 import com.example.bankofwords.parser.PdfParser;
-import com.example.bankofwords.utils.JwtUtil;
 import com.example.bankofwords.utils.WordUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -19,6 +18,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 @Service
+@Slf4j
 public class UploadService {
     private final WordDAO wordDAO;
     private final LexiconDAO lexiconDAO;
@@ -54,6 +54,7 @@ public class UploadService {
                 Files.write(imagePath, image.getBytes());
                 imageDAO.addImage(wordId, imageName);
             } catch (IOException e) {
+                log.info("Failed to add image to the file system: {}", imageName);
                 e.printStackTrace();
             }
         }
@@ -69,6 +70,7 @@ public class UploadService {
             if (fileExtension.equals("pdf")) {
                 unknownWords = pdfParser.parsePdf(file);
             } else {
+                log.info("Failed to parse book with unsupported file extension : {}", file.getOriginalFilename());
                 return Map.of("error", "Unsupported file format.");
             }
 
@@ -84,6 +86,7 @@ public class UploadService {
 
             return Map.of("added_words", addedWords);
         } catch (IOException e) {
+            log.info("Failed to parse book: {}", file.getOriginalFilename());
             return Map.of("error", "Failed to parse the book file.");
         }
     }

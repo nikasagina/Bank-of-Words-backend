@@ -4,11 +4,13 @@ import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.utils.JwtUtil;
 import com.example.bankofwords.utils.SecurityUtils;
 import com.example.bankofwords.utils.AuthValidator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@Slf4j
 public class AuthService {
     private final UserDAO userDAO;
     private final AuthValidator authValidator;
@@ -38,6 +40,7 @@ public class AuthService {
         String hash = securityUtils.hashPassword(password);
         userDAO.addUser(username, hash, email);
 
+        log.info("Successfully registered new user: {}", username);
         response.put("successful", true);
         return response;
     }
@@ -45,7 +48,7 @@ public class AuthService {
     public Map<String, Object> authenticate(String username, String password) {
         if (authValidator.validLogin(username, password)) {
             String jwt = jwtUtil.generateToken(username);
-
+            log.info("Successfully authorized");
             return Map.of("token", jwt);
         } else {
             throw new AuthServiceException("Invalid login credentials.");
@@ -57,6 +60,7 @@ public class AuthService {
         String username = jwtUtil.getUsernameFromToken(token);
         if (jwtUtil.validateToken(token, username)) {
             jwtUtil.invalidateToken(token);
+            log.info("Successfully authorized");
         } else {
             throw new AuthServiceException("Invalid token.");
         }

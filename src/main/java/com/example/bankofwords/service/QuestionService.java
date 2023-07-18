@@ -1,21 +1,23 @@
 package com.example.bankofwords.service;
 
 import com.example.bankofwords.constants.StatisticsConstants;
-import com.example.bankofwords.dao.*;
+import com.example.bankofwords.dao.ImageDAO;
+import com.example.bankofwords.dao.StatisticsDAO;
+import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.dao.WordHistoryDAO;
 import com.example.bankofwords.objects.Image;
 import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.singletons.FlashcardAnswers;
 import com.example.bankofwords.singletons.UniqueIdGenerator;
 import com.example.bankofwords.utils.IncorrectWordHeuristics;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.*;
 
 @Service
+@Slf4j
 public class QuestionService {
 
     private final WordDAO wordDAO;
@@ -44,6 +46,7 @@ public class QuestionService {
         }
 
         if (correct == null) {
+            log.info("No words left to learn in tableId: {}", tableId);
             return Map.of("error", "No more words left to learn");
         }
 
@@ -64,6 +67,7 @@ public class QuestionService {
         Word correct = wordDAO.getRandomWordFromTable(tableId);
 
         if (correct == null) {
+            log.info("No words left to learn in tableId: {}", tableId);
             return Map.of("error", "No more words left to learn");
         }
 
@@ -79,6 +83,7 @@ public class QuestionService {
         Image image = imageDAO.getRandomImageFromTable(tableId);
 
         if (image == null ) {
+            log.info("No images found in tableId: {}", tableId);
             return Map.of("error", "No images found");
         }
 
@@ -95,6 +100,7 @@ public class QuestionService {
         Map<String, Object> response = new HashMap<>();
 
         if(!FlashcardAnswers.getInstance().contains(flashcard_id)) {
+            log.info("Call for removed or never existed flashcardId: {}", flashcard_id);
             return null;
         }
 
@@ -117,6 +123,7 @@ public class QuestionService {
 
         if (statisticsDAO.getTotalCount(userId, wordId) > StatisticsConstants.MINIMUM_TRIES_TO_LEARN &&
                 statisticsDAO.getUserSuccessRateForWord(userId, wordId) > StatisticsConstants.MINIMUM_LEARN_RATE) {
+            log.info("User learned word through algorithm, userId: {}, wordId: {}", userId, wordId);
             wordDAO.learnWord(userId, wordId);
         }
 

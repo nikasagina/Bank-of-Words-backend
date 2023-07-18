@@ -1,17 +1,10 @@
 package com.example.bankofwords.service;
 
 import com.example.bankofwords.dao.LexiconDAO;
-import com.example.bankofwords.dao.UserDAO;
 import com.example.bankofwords.dao.WordDAO;
-import com.example.bankofwords.objects.Word;
-import com.example.bankofwords.utils.JwtUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Service
+@Slf4j
 public class WordService {
     private final WordDAO wordDAO;
     private final LexiconDAO lexiconDAO;
@@ -51,6 +45,7 @@ public class WordService {
         String definition = lexiconDAO.getWordDefinition(word);
 
         if (Objects.equals(definition, "")) {
+            log.info("Internal dictionary does not contain the word: {}", word);
             return null;
         }
 

@@ -1,24 +1,23 @@
 package com.example.bankofwords.service;
 
-import com.example.bankofwords.dao.*;
+import com.example.bankofwords.dao.ImageDAO;
+import com.example.bankofwords.dao.TableDAO;
+import com.example.bankofwords.dao.WordDAO;
 import com.example.bankofwords.objects.Table;
 import com.example.bankofwords.objects.Word;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.apache.commons.io.FileUtils;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.Objects;
 
 
 @Service
+@Slf4j
 public class TransferService {
     private final WordDAO wordDAO;
     private final ImageDAO imageDAO;
@@ -50,7 +50,7 @@ public class TransferService {
         Table mockTable = new Table(0, 0, tableName);
 
         if (tableDAO.getUserTables(userId).contains(mockTable) || tableDAO.getInitialTables().contains(mockTable)){
-
+            log.info("Importing table failed for userId: {}, table name: {}", userId, tableName);
             return Map.of("error", "You already have a table with the same name as the imported table");
         }
 
@@ -58,6 +58,7 @@ public class TransferService {
         long tableId = table.getTableId();
         List<Map<String, String>> words = (List<Map<String, String>>) json.get("words");
 
+        log.info("Importing new table: {}", tableId);
         for (Map<String, String> wordMap : words) {
             String word = wordMap.get("word");
             String definition = wordMap.get("definition");
@@ -69,11 +70,11 @@ public class TransferService {
             if (!Objects.equals(imageUrl, ""))
                 imageDAO.addImage(wordId, imageUrl);
         }
-
+        log.info("Importing table: {} has finished", tableId);
         return Map.of("table", table);
     }
 
-    public String exportTable(long tableId) throws IOException {
+    public String exportTable(long tableId) {
         Map<String, Object> response = new HashMap<>();
 
         Table table = tableDAO.getTable(tableId);
@@ -86,8 +87,14 @@ public class TransferService {
         response.put("tableName", table.getName());
         response.put("words", words);
 
-        // Convert the response to JSON
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(response);
+        try {
+            // Convert the response to JSON
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(response);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            log.info("Error while processing JSON to export tableId: {}", table);
+            return "";
+        }
     }
 }

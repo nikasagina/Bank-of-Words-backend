@@ -5,6 +5,7 @@ import com.example.bankofwords.objects.Image;
 import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.singletons.FlashcardAnswers;
 import com.example.bankofwords.singletons.UniqueIdGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class FlashcardService {
 
     private final WordDAO wordDAO;
@@ -29,6 +31,7 @@ public class FlashcardService {
         Word word = wordDAO.getRandomWordFromTable(tableId);
 
         if (word == null) {
+            log.info("No words left to learn in tableId: {}", tableId);
             return Map.of("error", "No more words left to learn");
         }
 
@@ -47,6 +50,7 @@ public class FlashcardService {
         Image image = imageDAO.getRandomImageFromTable(tableId);
 
         if (image == null ) {
+            log.info("No images found in tableId: {}", tableId);
             return Map.of("error", "No images found");
         }
 
@@ -64,6 +68,7 @@ public class FlashcardService {
 
     public String getFlashcardBack(long flashcardId) {
         if(!FlashcardAnswers.getInstance().contains(flashcardId)) {
+            log.info("Call for removed or never existed flashcardId: {}", flashcardId);
             return null;
         }
 
