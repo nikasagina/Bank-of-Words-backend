@@ -1,26 +1,23 @@
 package com.example.bankofwords.service;
 
-import com.example.bankofwords.dao.*;
+import com.example.bankofwords.dao.ImageDAO;
+import com.example.bankofwords.dao.StatisticsDAO;
+import com.example.bankofwords.dao.WordDAO;
+import com.example.bankofwords.dao.WordHistoryDAO;
 import com.example.bankofwords.objects.Image;
 import com.example.bankofwords.objects.Word;
 import com.example.bankofwords.singletons.FlashcardAnswers;
-import com.example.bankofwords.utils.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Map;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class QuestionServiceTest {
@@ -50,7 +47,7 @@ class QuestionServiceTest {
         when(wordDAO.getRandomWordFromTable(tableId)).thenReturn(word);
 
         // Act
-        Map<String, Object> response = questionService.start(tableId, new Random().nextDouble());
+        Map<String, Object> response = questionService.start(tableId, 1);
 
         // Assert
         assertNotNull(response);
@@ -66,7 +63,7 @@ class QuestionServiceTest {
         when(wordDAO.getRandomWordFromTable(tableId)).thenReturn(null);
 
         // Act
-        Map<String, Object> response = questionService.start(tableId, new Random().nextDouble());
+        Map<String, Object> response = questionService.start(tableId, 0);
       
         assertNotNull(response);
         assertEquals("No more words left to learn", response.get("error"));
@@ -108,9 +105,7 @@ class QuestionServiceTest {
     @Test
     void whenImageRequestWithValidToken_returnsOkResponse() {
         // Arrange
-        String authHeader = "Bearer someToken";
         long tableId = 1L;
-        String username = "testUser";
         long userId = 1L;
         Word word = new Word(1L, "example", "definition", tableId);
         Image image = new Image(1L, "imageUrl");
@@ -133,11 +128,7 @@ class QuestionServiceTest {
     @Test
     void whenImageRequestWithNoMoreWordsInTable_returnsOkResponseWithErrorMessage() {
         // Arrange
-        String authHeader = "Bearer someToken";
         long tableId = 1L;
-        String username = "testUser";
-        long userId = 1L;
-        
 
         when(imageDAO.getRandomImageFromTable(tableId)).thenReturn(null);
 
@@ -145,8 +136,6 @@ class QuestionServiceTest {
         Map<String, Object> response = questionService.image(tableId);
 
         // Assert
-
-      
         assertNotNull(response);
         assertEquals("No images found", response.get("error"));
     }

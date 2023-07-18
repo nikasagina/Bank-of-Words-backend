@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -77,7 +78,7 @@ public class TransferServiceTest {
     }
 
     @Test
-    void testExportTable() throws IOException {
+    void testExportTable() throws JsonProcessingException {
         // Prepare test data
         long tableId = 1L;
         String tableName = "testTable";
